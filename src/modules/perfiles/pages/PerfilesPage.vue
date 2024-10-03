@@ -318,9 +318,25 @@ const nivel = ref('');
 const opciones = ref<string[]>([]);
 const mensajeError = ref('');
 const perfilStore = usePerfilStore();
+const perfiles = ref<PerfilResponse[]>([]);
 
+
+//Constantes del modal editar
+const idPerfil = ref<number>(0);
+const opcionesEditar = ref<string[]>([]);
+const mostrarModalEditar = ref(false);
+const nombreEditar = ref('');
+const nivelEditar = ref('');
+
+
+//Constantes para traer los componentes desde el endpoint
+const query = useConsultarItemCatalogo();
+const catalogoCodigo = 'COMP';
+const componentes = ref<ItemCatalogo[]>([]);
+
+
+//Guardando en el store
 perfilStore.setPerfil(nombre.value, nivel.value, opciones.value);
-
 console.log("Opciones en el store", opciones.value)
 
 const obtenerPerfiles = async () => {
@@ -352,9 +368,6 @@ const cerrarModal = () => {
 };
 
 //Guardar datos del perfil creado
-
-
-
 const guardar = async () => {
 
     const usuarioId = localStorage.getItem('usuarioId');
@@ -363,7 +376,7 @@ const guardar = async () => {
     console.log('ID de Perfil:', idPerfil.value); // Verifica que el ID esté definido
     console.log('Nombre guardado:', nombreEditar.value);
     console.log('Nivel guardado:', nivelEditar.value);
-    
+
     const idsComponentesGuardados = opciones.value.map(codigo => {
         // Busca el componente en la lista que ya tienes cargada
         const componente = componentes.value.find(comp => comp['Item Código'] === codigo);
@@ -431,18 +444,6 @@ const guardar = async () => {
 };
 
 
-const perfiles = ref<PerfilResponse[]>([]);
-
-
-
-
-const idPerfil = ref<number>(0);
-const opcionesEditar = ref<string[]>([]);
-const mostrarModalEditar = ref(false);
-const nombreEditar = ref('');
-const nivelEditar = ref('');
-
-
 // Función para abrir el modal de edición
 const abrirModalEditar = (perfil: PerfilResponse) => {
     idPerfil.value = perfil.perf_id; // Asigna el ID del perfil aquí
@@ -458,7 +459,6 @@ const cerrarModalEditar = () => {
 };
 
 
-
 const guardarEdicion = async () => {
     const usuarioId = localStorage.getItem('usuarioId');
 
@@ -466,7 +466,13 @@ const guardarEdicion = async () => {
     console.log('ID de Perfil:', idPerfil.value); // Verifica que el ID esté definido
     console.log('Nombre Editar:', nombreEditar.value);
     console.log('Nivel Editar:', nivelEditar.value);
-    console.log('Opciones Editar:', opcionesEditar.value);
+    const idsComponentesGuardados = opcionesEditar.value.map(codigo => {
+        const componente = componentes.value.find(comp => comp['Item Código'] === codigo);
+        return componente ? componente.Id : null; // Si encuentra el componente, devuelve su ID; si no, devuelve null
+    });
+
+    console.log('Componentes guardados (IDs):', idsComponentesGuardados);
+
     console.log('Id usuario:', usuarioId);
 
     // Validaciones similares a las de guardar
@@ -528,8 +534,6 @@ const guardarEdicion = async () => {
 };
 
 
-
-
 const borrarPerfil = async (perfilId: number): Promise<void> => {
     try {
         await useApi.delete(`/api/v1/perfiles/${perfilId}`);
@@ -540,11 +544,6 @@ const borrarPerfil = async (perfilId: number): Promise<void> => {
         Swal.fire('Error', 'No se pudo eliminar el perfil', 'error');
     }
 };
-
-
-const query = useConsultarItemCatalogo();
-const catalogoCodigo = 'COMP';
-const componentes = ref<ItemCatalogo[]>([]);
 
 
 // Función para cargar los componentes desde la API
@@ -574,8 +573,4 @@ watch(
     }
 );
 
-
-
 </script>
-
-<style scoped></style>
