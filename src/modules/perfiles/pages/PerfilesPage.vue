@@ -163,7 +163,7 @@
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                     <label v-for="componente in componentes" :key="componente.Id"
                                                         class="flex items-center p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200 ease-in-out">
-                                                        <input type="checkbox" v-model="opcionesEditar"
+                                                        <input type="checkbox" v-model="opciones"
                                                             :value="componente['Item Código']"
                                                             class="form-checkbox text-orange-500 mr-3" />
                                                         <span class="text-gray-800">{{ componente['Item Nombre']
@@ -292,7 +292,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { usePerfilStore } from '@/stores/use-perfil.store';
@@ -302,17 +302,26 @@ import { useApi } from '@/composables/use-api';
 import type { PerfilResponse } from '@/modules/perfiles/dto/PerfilResponseGet';
 import { useConsultarItemCatalogo } from '@/modules/perfiles/composables/customDataTableComponentsResponse';
 import type { ItemCatalogo } from '@/modules/perfiles/dto/itemCatalogo.dto';
+import { watch } from 'vue';
+
+onMounted(async () => {
+    await obtenerPerfiles();
+    cargarComponentes(); // Llama a la función al montar el componente
+});
 
 const router = useRouter();
 const guardarPerfil = useGuardarPerfil();
 const mostrarModal = ref(false);
 const nombre = ref('');
 const nivel = ref('');
+// const perfilActual = ref<PerfilResponse | null>(null);
 const opciones = ref<string[]>([]);
 const mensajeError = ref('');
-
 const perfilStore = usePerfilStore();
+
 perfilStore.setPerfil(nombre.value, nivel.value, opciones.value);
+
+console.log("Opciones en el store", opciones.value)
 
 const obtenerPerfiles = async () => {
     try {
@@ -335,15 +344,36 @@ const limitarLetras = () => {
 
 const abrirModal = () => {
     mostrarModal.value = true;
+
 };
 
 const cerrarModal = () => {
     mostrarModal.value = false;
 };
 
-// Guardar datos del perfil creado
+//Guardar datos del perfil creado
+
+
+
 const guardar = async () => {
+
     const usuarioId = localStorage.getItem('usuarioId');
+
+    console.log('Guardando edición...'); // Para verificar que la función se está llamando
+    console.log('ID de Perfil:', idPerfil.value); // Verifica que el ID esté definido
+    console.log('Nombre guardado:', nombreEditar.value);
+    console.log('Nivel guardado:', nivelEditar.value);
+    
+    const idsComponentesGuardados = opciones.value.map(codigo => {
+        // Busca el componente en la lista que ya tienes cargada
+        const componente = componentes.value.find(comp => comp['Item Código'] === codigo);
+        return componente ? componente.Id : null; // Si encuentra el componente, devuelve su ID; si no, devuelve null
+    });
+
+    console.log('Componentes guardados (IDs):', idsComponentesGuardados);
+
+    console.log('Id usuario:', usuarioId);
+
 
     // Validaciones
     if (!nombre.value) {
@@ -377,8 +407,7 @@ const guardar = async () => {
     const perfilDto = {
         perf_nombre: nombre.value,
         perf_nivel_contribucion: nivel.value,
-        usu_id: Number(usuarioId),
-        opciones: opciones.value, // Asegúrate de enviar las opciones
+        usu_id: Number(usuarioId), // Cambia este valor con el ID del usuario real
     };
 
     try {
@@ -401,14 +430,18 @@ const guardar = async () => {
     }
 };
 
+
 const perfiles = ref<PerfilResponse[]>([]);
+
+
+
 
 const idPerfil = ref<number>(0);
 const opcionesEditar = ref<string[]>([]);
 const mostrarModalEditar = ref(false);
 const nombreEditar = ref('');
 const nivelEditar = ref('');
-const modoCreacion = ref(false); // Modo de creación
+
 
 // Función para abrir el modal de edición
 const abrirModalEditar = (perfil: PerfilResponse) => {
@@ -417,16 +450,6 @@ const abrirModalEditar = (perfil: PerfilResponse) => {
     nombreEditar.value = perfil.perf_nombre;
     nivelEditar.value = perfil.perf_nivel_contribucion;
     opcionesEditar.value = perfil.opciones || []; // Asigna las opciones del perfil
-    modoCreacion.value = false; // Establece modo de edición
-};
-
-// Función para abrir el modal de creación
-const abrirModalCrear = () => {
-    mostrarModalEditar.value = true;
-    nombreEditar.value = '';
-    nivelEditar.value = '';
-    opcionesEditar.value = []; // Limpia las opciones porque es un nuevo perfil
-    modoCreacion.value = true; // Establece modo de creación
 };
 
 // Función para cerrar el modal de edición
@@ -434,9 +457,17 @@ const cerrarModalEditar = () => {
     mostrarModalEditar.value = false;
 };
 
-// Guardar edición
+
+
 const guardarEdicion = async () => {
     const usuarioId = localStorage.getItem('usuarioId');
+
+    console.log('Guardando edición...'); // Para verificar que la función se está llamando
+    console.log('ID de Perfil:', idPerfil.value); // Verifica que el ID esté definido
+    console.log('Nombre Editar:', nombreEditar.value);
+    console.log('Nivel Editar:', nivelEditar.value);
+    console.log('Opciones Editar:', opcionesEditar.value);
+    console.log('Id usuario:', usuarioId);
 
     // Validaciones similares a las de guardar
     if (!nombreEditar.value) {
@@ -466,16 +497,17 @@ const guardarEdicion = async () => {
         return;
     }
 
-    // Cuerpo de la solicitud
+    // Cuerpo de la solicitud, enviando solo los campos que deseas actualizar
     const perfilDto = {
         perf_nombre: nombreEditar.value,
         perf_nivel_contribucion: nivelEditar.value,
         usu_id: Number(usuarioId),
-        opciones: opcionesEditar.value, // Envío de opciones editadas
+        // Agrega otros campos si es necesario
     };
 
     try {
-        await useApi.patch(`/api/v1/perfiles/${idPerfil.value}`, perfilDto);
+        // Cambiar aquí a PATCH
+        await useApi.patch(`/api/v1/perfiles/${idPerfil.value}`, perfilDto); // Llama a la API para actualizar el perfil
 
         Swal.fire({
             icon: 'success',
@@ -483,7 +515,7 @@ const guardarEdicion = async () => {
             text: 'El perfil se actualizó correctamente.',
         });
     } catch (error) {
-        console.error('Error al actualizar el perfil:', error);
+        console.error('Error al actualizar el perfil:', error); // Para ver más detalles del error
         Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -494,6 +526,9 @@ const guardarEdicion = async () => {
         obtenerPerfiles();
     }
 };
+
+
+
 
 const borrarPerfil = async (perfilId: number): Promise<void> => {
     try {
@@ -506,40 +541,41 @@ const borrarPerfil = async (perfilId: number): Promise<void> => {
     }
 };
 
-// Consultar componentes
+
 const query = useConsultarItemCatalogo();
 const catalogoCodigo = 'COMP';
 const componentes = ref<ItemCatalogo[]>([]);
 
-// Función para cargar los componentes
+
+// Función para cargar los componentes desde la API
 const cargarComponentes = async () => {
     try {
+        // Llama a la función mutateAsync pasándole el código
         const response = await query.mutateAsync(catalogoCodigo);
+
+        // Almacena los datos recibidos en la variable "componentes"
         componentes.value = response;
+
     } catch (error) {
         console.error('Error al cargar los componentes del catálogo:', error);
     }
 };
 
-// Resetear selección
 const resetearSeleccion = () => {
-    opcionesEditar.value = []; // Limpia las opciones seleccionadas
+    opcionesEditar.value = [];  // Limpia las opciones seleccionadas
 };
 
-// Observar el estado del modal
-watch(mostrarModalEditar, (nuevoValor) => {
-    if (nuevoValor && modoCreacion.value) {
-        resetearSeleccion(); // Limpia las opciones solo si es modo de creación
+watch(
+    mostrarModalEditar, // Esta es la propiedad que estamos observando
+    (nuevoValor) => { // Este es el callback que se ejecutará al cambiar
+        if (nuevoValor) {
+            resetearSeleccion(); // Cuando el modal se abre, limpia las opciones seleccionadas
+        }
     }
-});
+);
 
-// Montar el componente
-onMounted(async () => {
-    await obtenerPerfiles();
-    cargarComponentes(); // Llama a la función al montar el componente
-});
+
+
 </script>
-
-
 
 <style scoped></style>
