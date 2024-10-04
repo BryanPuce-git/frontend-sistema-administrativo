@@ -19,33 +19,23 @@
 
         <!-- Formulario y Paneles de Configuración -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <!-- Formulario de edición -->
           <div class="bg-white shadow p-4 rounded-lg md:col-span-2">
             <!-- Nombre -->
             <div class="mb-4">
               <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-              <input type="text" id="nombre" v-model="nombre"  class="mt-1 block w-full border-gray-300 rounded-md">
+              <input type="text" id="nombre" v-model="nombre" class="mt-1 block w-full border-gray-300 rounded-md">
             </div>
             <!-- Nivel -->
             <div class="mb-4">
               <label for="nivel" class="block text-sm font-medium text-gray-700">Nivel del perfil</label>
-              <input type="text" id="nombre" v-model="nivel"  class="mt-1 block w-full border-gray-300 rounded-md">
-
+              <input type="text" id="nivel" v-model="nivel" class="mt-1 block w-full border-gray-300 rounded-md">
             </div>
-            <!-- Descripción -->
+            <!-- Descripción general (incluye Responsabilidades y Requisitos) -->
             <div class="mb-4">
-              <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
-              <textarea id="descripcion" class="mt-1 block w-full border-gray-300 rounded-md" rows="5"></textarea>
-            </div>
-            <!-- Responsabilidades -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Responsabilidades</label>
-              <textarea class="mt-1 block w-full border-gray-300 rounded-md" rows="5"></textarea>
-            </div>
-            <!-- Requisitos -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Requisitos</label>
-              <textarea class="mt-1 block w-full border-gray-300 rounded-md" rows="5"></textarea>
+              <label for="descripcionGeneral" class="block text-sm font-medium text-gray-700">Descripción</label>
+              <textarea id="descripcionGeneral" class="mt-1 block w-full border-gray-300 rounded-md" rows="10"
+                v-model="descripcionGeneral"
+                placeholder="Aquí puedes poner una descripción de las responsabilidades y requisitos..."></textarea>
             </div>
           </div>
 
@@ -148,27 +138,27 @@
 
       <!-- Modal -->
       <transition name="fade">
-    <div v-if="mostrarModal" @click.self="cerrarModal"
-      class="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
-      <div class="bg-white rounded-lg p-6 relative shadow-lg w-96 text-center z-60">
-        <h3 class="text-lg font-semibold mb-4">¿Qué deseas hacer con tu nuevo perfil?</h3>
-        <p class="text-gray-600 mb-6">Puedes lanzar un proceso con este perfil o ver todos los perfiles.</p>
+        <div v-if="mostrarModal" @click.self="cerrarModal"
+          class="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
+          <div class="bg-white rounded-lg p-6 relative shadow-lg w-96 text-center z-60">
+            <h3 class="text-lg font-semibold mb-4">¿Qué deseas hacer con tu nuevo perfil?</h3>
+            <p class="text-gray-600 mb-6">Puedes lanzar un proceso con este perfil o ver todos los perfiles.</p>
 
-        <div class="flex justify-center space-x-6">
-          <button @click="cerrarModal" class="text-blue-600 hover:underline">Permanecer</button>
-          <button @click="irAPerfiles" class="text-blue-600 hover:underline">Perfiles</button>
-          <button @click="irAProceso" class="text-blue-600 hover:underline">Lanzar proceso</button>
+            <div class="flex justify-center space-x-6">
+              <button @click="cerrarModal" class="text-blue-600 hover:underline">Permanecer</button>
+              <button @click="irAPerfiles" class="text-blue-600 hover:underline">Perfiles</button>
+              <button @click="irAProceso" class="text-blue-600 hover:underline">Lanzar proceso</button>
+            </div>
+
+            <button @click="cerrarModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-70">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
-
-        <button @click="cerrarModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-70">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-            stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </transition>
+      </transition>
     </div>
   </DashboardLayout>
 </template>
@@ -184,6 +174,7 @@ const nombre = perfilStore.nombre;
 const nivel = perfilStore.nivel;
 // const opciones = perfilStore.opciones;
 
+const descripcionGeneral = ref('');
 const router = useRouter();
 
 const irACurriculum = () => {

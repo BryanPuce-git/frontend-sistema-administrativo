@@ -12,9 +12,9 @@
                 <div class="w-full sm:w-1/3">
                     <select
                         class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option>Todos los estados</option>
                         <option>Activo</option>
-                        <option>Pendiente</option>
-                        <option>Inactivo</option>
+                        <option>Inactivo</option> 
                     </select>
                 </div>
                 <div class="flex space-x-2">
@@ -35,28 +35,39 @@
                 </div>
             </div>
 
-            <div v-for="perfil in perfiles" :key="perfil.perf_id" class="border border-gray-200 p-4 rounded-lg shadow">
+            <div v-for="perfil in perfiles" :key="perfil.perf_id"
+                class="border border-gray-200 p-4 mb-2 rounded-lg shadow hover:bg-gray-200 transition-colors duration-300"
+                @click="irAPerfilSettings">
                 <div class="flex justify-between items-center">
                     <div>
-                        <!-- Estado del perfil -->
-                        <span class="text-xs"
-                            :class="{ 'text-green-500': perfil.perf_estado === 1, 'text-red-500': perfil.perf_estado === 0 }">
-                            {{ perfil.perf_estado === 1 ? 'Activo' : 'Inactivo' }}
-                        </span>
+                        <!-- Estado del perfil y Fecha de modificación -->
+                        <div class="flex items-center space-x-2">
+                            <!-- Estado del perfil -->
+                            <span class="text-xs"
+                                :class="{ 'text-green-500': perfil.perf_estado === 1, 'text-red-500': perfil.perf_estado === 0 }">
+                                {{ perfil.perf_estado === 1 ? 'Activo' : 'Inactivo' }}
+                            </span>
+                            <!-- Fecha de modificación al lado del estado -->
+                            <span class="text-xs text-gray-500">
+                                {{ perfil.perf_fecha_actualizacion }}
+                            </span>
+                        </div>
+
                         <!-- Nombre del perfil -->
                         <p class="font-semibold text-gray-800">{{ perfil.perf_nombre }}</p>
                     </div>
 
                     <!-- Botones de Editar y Borrar -->
                     <div class="flex">
-                        <button @click="abrirModalEditar(perfil)" class="text-gray-600 hover:text-gray-900">
+                        <button @click.stop="abrirModalEditar(perfil)" class="text-gray-600 hover:text-gray-900">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 12h12m-6-6v12" />
                             </svg>
                         </button>
-                        <button @click="borrarPerfil(perfil.perf_id)" class="text-gray-600 hover:text-gray-900 ml-4">
+                        <button @click.stop="borrarPerfil(perfil.perf_id)"
+                            class="text-gray-600 hover:text-gray-900 ml-4">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -65,11 +76,19 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Estado, Nivel, y Componentes del perfil -->
                 <p class="text-sm text-gray-600">
                     Estado: {{ perfil.perf_estado === 1 ? 'Activo' : 'Inactivo' }} | Nivel: {{
-                        perfil.perf_nivel_contribucion }}
+                        perfil.perf_nivel_contribucion }} | Componentes: Disc
+                </p>
+
+                <!-- Descripción genérica para el rol -->
+                <p class="text-sm text-gray-600 mt-2">
+                    Aquí puedes poner una descripción de los requisitos y responsabilidades del perfil.
                 </p>
             </div>
+
 
 
 
@@ -309,6 +328,10 @@ onMounted(async () => {
     cargarComponentes(); // Llama a la función al montar el componente
 });
 
+const irAPerfilSettings = () => {
+    router.replace('/perfil-settings');
+};
+
 const router = useRouter();
 const guardarPerfil = useGuardarPerfil();
 const mostrarModal = ref(false);
@@ -350,29 +373,35 @@ const obtenerPerfiles = async () => {
     }
 
     try {
+        console.log('Llamando a la API para obtener perfiles del usuario:', usuarioId);
+
         // Realiza la llamada a la API y obtén la respuesta
         const response = await useApi.get(`/api/v1/perfiles_usuario/${usuarioId}`);
 
+        console.log('Respuesta de la API:', response.data); // Muestra la respuesta de la API cruda
+
         // Mapea la respuesta de la API a la estructura de tu interfaz PerfilResponse
-        perfiles.value = response.data.map((perfil: { Id: number; Perfil: string; 'Nivel Contribución': string; Estado: number }) => ({
+        perfiles.value = response.data.map((perfil: { Id: number; Perfil: string; Dificultad: string; Estado: string; Fecha: string }) => ({
             perf_id: perfil.Id,
             perf_nombre: perfil.Perfil,
-            perf_nivel_contribucion: perfil['Nivel Contribución'],
-            perf_estado: perfil.Estado,
+            perf_nivel_contribucion: perfil.Dificultad, // Dificultad ahora es el nivel de contribución
+            perf_estado: perfil.Estado === 'Activo' ? 1 : 0, // Convierte el estado a 1 o 0 según 'Activo' o 'Inactivo'
             usu_id: usuarioId ? Number(usuarioId) : 0, // Asignar usuario_id si es necesario
             proc_id: 0, // Puedes ajustar este valor según tu lógica
             perf_experiencia_minima: 0, // Ajustar si es necesario
             perf_salario_minimo: '', // Ajustar si es necesario
             perf_salario_maximo: '', // Ajustar si es necesario
-            perf_fecha_creacion: '', // Ajustar si es necesario
-            perf_fecha_actualizacion: '', // Ajustar si es necesario
+            perf_fecha_creacion: perfil.Fecha, // Asignar la fecha directamente desde la respuesta
+            perf_fecha_actualizacion: perfil.Fecha, // Usar la misma fecha si es necesario
         }));
 
-        console.log('Perfiles obtenidos:', perfiles.value);
+        console.log('Perfiles obtenidos después de mapear:', perfiles.value); // Imprime el resultado mapeado
     } catch (error) {
         console.error('Error al obtener los perfiles:', error);
     }
 };
+
+
 
 
 const contarCaracteres = computed(() => {

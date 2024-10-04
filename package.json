@@ -19,6 +19,8 @@
     "flowbite": "^2.4.1",
     "pinia": "^2.2.1",
     "pinia-plugin-persistedstate": "^3.2.1",
+    "quill": "^2.0.2",
+    "sweetalert2": "^11.14.1",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },
