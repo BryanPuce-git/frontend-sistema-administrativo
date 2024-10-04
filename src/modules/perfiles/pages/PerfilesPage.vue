@@ -35,7 +35,6 @@
                 </div>
             </div>
 
-            <!-- Listado de perfiles dinámico -->
             <div v-for="perfil in perfiles" :key="perfil.perf_id" class="border border-gray-200 p-4 rounded-lg shadow">
                 <div class="flex justify-between items-center">
                     <div>
@@ -71,6 +70,7 @@
                         perfil.perf_nivel_contribucion }}
                 </p>
             </div>
+
 
 
             <!-- Botón verde de añadir perfil -->
@@ -339,14 +339,41 @@ const componentes = ref<ItemCatalogo[]>([]);
 perfilStore.setPerfil(nombre.value, nivel.value, opciones.value);
 console.log("Opciones en el store", opciones.value)
 
+
+
 const obtenerPerfiles = async () => {
+    const usuarioId = localStorage.getItem('usuarioId');
+
+    if (!usuarioId) {
+        console.error('No se encontró el ID de usuario');
+        return;
+    }
+
     try {
-        const response = await useApi.get('/api/v1/perfiles');
-        perfiles.value = response.data; // Actualiza la lista de perfiles
+        // Realiza la llamada a la API y obtén la respuesta
+        const response = await useApi.get(`/api/v1/perfiles_usuario/${usuarioId}`);
+
+        // Mapea la respuesta de la API a la estructura de tu interfaz PerfilResponse
+        perfiles.value = response.data.map((perfil: { Id: number; Perfil: string; 'Nivel Contribución': string; Estado: number }) => ({
+            perf_id: perfil.Id,
+            perf_nombre: perfil.Perfil,
+            perf_nivel_contribucion: perfil['Nivel Contribución'],
+            perf_estado: perfil.Estado,
+            usu_id: usuarioId ? Number(usuarioId) : 0, // Asignar usuario_id si es necesario
+            proc_id: 0, // Puedes ajustar este valor según tu lógica
+            perf_experiencia_minima: 0, // Ajustar si es necesario
+            perf_salario_minimo: '', // Ajustar si es necesario
+            perf_salario_maximo: '', // Ajustar si es necesario
+            perf_fecha_creacion: '', // Ajustar si es necesario
+            perf_fecha_actualizacion: '', // Ajustar si es necesario
+        }));
+
+        console.log('Perfiles obtenidos:', perfiles.value);
     } catch (error) {
         console.error('Error al obtener los perfiles:', error);
     }
 };
+
 
 const contarCaracteres = computed(() => {
     return nombre.value.length;
