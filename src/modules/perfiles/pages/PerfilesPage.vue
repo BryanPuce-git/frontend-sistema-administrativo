@@ -44,17 +44,17 @@
                         <div class="flex items-center space-x-2">
                             <!-- Estado del perfil -->
                             <span class="text-xs"
-                                :class="{ 'text-green-500': perfil.perf_estado === 1, 'text-red-500': perfil.perf_estado === 0 }">
-                                {{ perfil.perf_estado === 1 ? 'Activo' : 'Inactivo' }}
+                                :class="{ 'text-green-500': perfil.Estado === 'Activo', 'text-red-500': perfil.Estado === 'Activo' }">
+                                {{ perfil.Estado === 'Activo' ? 'Activo' : 'Inactivo' }}
                             </span>
                             <!-- Fecha de modificación al lado del estado -->
                             <span class="text-xs text-gray-500">
-                                {{ perfil.perf_fecha_actualizacion }}
+                                {{ perfil.Fecha }}
                             </span>
                         </div>
 
                         <!-- Nombre del perfil -->
-                        <p class="font-semibold text-gray-800">{{ perfil.perf_nombre }}</p>
+                        <p class="font-semibold text-gray-800">{{ perfil.Perfil }}</p>
                     </div>
 
                     <!-- Botones de Editar y Borrar -->
@@ -79,8 +79,8 @@
 
                 <!-- Estado, Nivel, y Componentes del perfil -->
                 <p class="text-sm text-gray-600">
-                    Estado: {{ perfil.perf_estado === 1 ? 'Activo' : 'Inactivo' }} | Nivel: {{
-                        perfil.perf_nivel_contribucion }} | Componentes: Disc
+                    Estado: {{ perfil.Estado === 'Activo' ? 'Activo' : 'Inactivo' }} | Nivel: {{
+                        perfil.Dificultad }} | Componentes: {{ perfil.Componente }}
                 </p>
 
                 <!-- Descripción genérica para el rol -->
@@ -318,10 +318,10 @@ import { usePerfilStore } from '@/stores/use-perfil.store';
 import Swal from 'sweetalert2';
 import { useGuardarPerfil } from '@/modules/perfiles/composables/customDataTableAgregarPerfilesModal';
 import { useApi } from '@/composables/use-api';
-import type { PerfilResponse } from '@/modules/perfiles/dto/PerfilResponseGet';
+// import type { PerfilResponse } from '@/modules/perfiles/dto/PerfilResponseGet';
 import { useConsultarItemCatalogo } from '@/modules/perfiles/composables/customDataTableComponentsResponse';
 import { useCrearPerfilComponente } from '@/modules/perfiles/composables/CrearPerfilYComponentes';
-
+import type { PerfilComponenteResponse } from '../dto/PerfilComponenteResponse.dto';
 import type { ItemCatalogo } from '@/modules/perfiles/dto/itemCatalogo.dto';
 import { watch } from 'vue';
 
@@ -345,7 +345,7 @@ const nivel = ref('');
 const opciones = ref<string[]>([]);
 const mensajeError = ref('');
 const perfilStore = usePerfilStore();
-const perfiles = ref<PerfilResponse[]>([]);
+const perfiles = ref<PerfilComponenteResponse[]>([]);
 
 
 //Constantes del modal editar
@@ -370,7 +370,6 @@ console.log("Opciones en el store", opciones.value)
 
 
 const obtenerPerfiles = async () => {
-
     const usuarioId = localStorage.getItem('usuarioId');
     const estado = '1';
 
@@ -382,31 +381,44 @@ const obtenerPerfiles = async () => {
     try {
         console.log('Llamando a la API para obtener perfiles del usuario:', usuarioId);
 
-       
         const response = await useApi.get(`/api/v1/perfiles_usuario/${usuarioId}/${estado}`);
+        console.log('Respuesta de la API:', response.data);
 
-        console.log('Respuesta de la API:', response.data); 
+        // Verifica que la respuesta sea un array
+        if (!Array.isArray(response.data)) {
+            console.error('La respuesta de la API no es un array:', response.data);
+            return;
+        }
 
         // Mapea la respuesta de la API a la estructura de tu interfaz PerfilResponse
-        perfiles.value = response.data.map((perfil: { Id: number; Perfil: string; Dificultad: string; Estado: string; Fecha: string }) => ({
-            perf_id: perfil.Id,
-            perf_nombre: perfil.Perfil,
-            perf_nivel_contribucion: perfil.Dificultad, // Dificultad ahora es el nivel de contribución
-            perf_estado: perfil.Estado === 'Activo' ? 1 : 0, // Convierte el estado a 1 o 0 según 'Activo' o 'Inactivo'
-            usu_id: usuarioId ? Number(usuarioId) : 0, // Asignar usuario_id si es necesario
-            proc_id: 0, // Puedes ajustar este valor según tu lógica
-            perf_experiencia_minima: 0, // Ajustar si es necesario
-            perf_salario_minimo: '', // Ajustar si es necesario
-            perf_salario_maximo: '', // Ajustar si es necesario
-            perf_fecha_creacion: perfil.Fecha, // Asignar la fecha directamente desde la respuesta
-            perf_fecha_actualizacion: perfil.Fecha, // Usar la misma fecha si es necesario
-        }));
+        perfiles.value = response.data.map((perfil: any) => {
+            // Validaciones básicas antes de mapear los campos
+            const perfId = perfil.perf_id ?? null; // Usa perfil.perf_id en lugar de perfil.Id
 
-        console.log('Perfiles obtenidos después de mapear:', perfiles.value); 
+            if (!perfId) {
+                console.warn('Perfil con ID no válido encontrado:', perfil);
+            }
+
+            return {
+                pcom_id: perfil.pcom_id ?? null, // ID del componente
+                perf_id: perfil.perf_id ?? null, // ID del perfil
+                Perfil: perfil.Perfil || 'Nombre no disponible', // Nombre del perfil
+                Estado: perfil.Estado || 'Estado no disponible', // Estado del perfil
+                Dificultad: perfil.Dificultad || 'Dificultad no disponible', // Nivel de dificultad
+                Fecha: perfil.Fecha || 'Fecha no disponible', // Fecha de actualización o creación
+                Componente: perfil.Componente || 'Componente no disponible', // Componentes asociados al perfil
+                Anuncio: perfil.Anuncio || 'Anuncio no disponible' // Descripción del anuncio asociado
+            };
+        });
+
+        console.log('Perfiles obtenidos después de mapear:', perfiles.value);
+
     } catch (error) {
         console.error('Error al obtener los perfiles:', error);
     }
 };
+
+
 
 
 
@@ -485,7 +497,7 @@ const guardar = async () => {
     try {
         // Llamar la mutación para guardar el perfil
         const perfilCreado = await guardarPerfil.mutateAsync(perfilDto);
-        
+
         // Asegúrate de que la respuesta tenga el ID correcto
         const perfilId = perfilCreado.perf_id; // Cambia esto según la estructura de tu respuesta
 
@@ -543,12 +555,12 @@ const guardar = async () => {
 
 
 // Función para abrir el modal de edición
-const abrirModalEditar = (perfil: PerfilResponse) => {
+const abrirModalEditar = (perfil: PerfilComponenteResponse) => {
     idPerfil.value = perfil.perf_id; // Asigna el ID del perfil aquí
     mostrarModalEditar.value = true;
-    nombreEditar.value = perfil.perf_nombre;
-    nivelEditar.value = perfil.perf_nivel_contribucion;
-    opcionesEditar.value = perfil.opciones || []; // Asigna las opciones del perfil
+    nombreEditar.value = perfil.Perfil;
+    nivelEditar.value = perfil.Dificultad;
+    // opcionesEditar.value = perfil.Componente || []; // Asigna las opciones del perfil
 };
 
 // Función para cerrar el modal de edición

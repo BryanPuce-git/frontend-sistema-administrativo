@@ -8,9 +8,9 @@ import type { PerfilComponenteResponse } from '../dto/PerfilComponenteResponse.d
 export const useConsultarPerfil = () => {
   const mutation = useMutation({
     // Función de la mutación: recibe un objeto con perfilId y estado
-    mutationFn: async ({ perfilId, estado }: { perfilId: number; estado: number }) => {
+    mutationFn: async ({ perfilId }: { perfilId: number }) => {
       // Realiza la llamada API para obtener el perfil usando perfilId y estado
-      const response = await useApi.get<PerfilComponenteResponse>(`/api/v1/Perfiles-Componentes/${perfilId}/${estado}`);
+      const response = await useApi.get<PerfilComponenteResponse>(`/api/v1/Perfiles-Componentes/${perfilId}`);
       
       // Retorna los datos obtenidos del servidor
       return response.data;

@@ -187,9 +187,9 @@ const nombreRecibido = ref('');
 const nivelRecibido = ref('');
 const anuncio = ref('');
 
-const obtenerDatoDePerfil = async (perfilId: number, estado: number) => {
+const obtenerDatoDePerfil = async (perfilId: number) => {
   try {
-    const response = await consultarPerfil.mutateAsync({ perfilId, estado });
+    const response = await consultarPerfil.mutateAsync({ perfilId });
     // console.log('Respuesta de la API:', response);
     if (Array.isArray(response) && response.length > 0) {
       const perfil = response[0];  
@@ -206,12 +206,11 @@ const obtenerDatoDePerfil = async (perfilId: number, estado: number) => {
 };
 
 onMounted(() => {
-  // const perfilId = Number(route.params.perfilId);
-  const perfilId = 1;
-  const estado = 1;
-  console.log(perfilId, estado)
+  const perfilId = Number(route.params.perfilId);
+
+  console.log(perfilId)
   if (perfilId) {
-    obtenerDatoDePerfil(perfilId, estado);
+    obtenerDatoDePerfil(perfilId);
   }
 });
 
