@@ -8,7 +8,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: true }, 
   },
   {
-    path: '/perfil-settings',
+    path: '/perfil-settings/:perfilId',
     name: 'perfil-settings',
     component: () => import('./pages/PerfilSettings.vue'),
     meta: { requiresAuth: true }, 

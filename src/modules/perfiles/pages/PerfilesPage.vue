@@ -14,7 +14,7 @@
                         class="border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option>Todos los estados</option>
                         <option>Activo</option>
-                        <option>Inactivo</option> 
+                        <option>Inactivo</option>
                     </select>
                 </div>
                 <div class="flex space-x-2">
@@ -37,7 +37,7 @@
 
             <div v-for="perfil in perfiles" :key="perfil.perf_id"
                 class="border border-gray-200 p-4 mb-2 rounded-lg shadow hover:bg-gray-200 transition-colors duration-300"
-                @click="irAPerfilSettings">
+                @click="irAPerfilSettings(perfil.perf_id)">
                 <div class="flex justify-between items-center">
                     <div>
                         <!-- Estado del perfil y Fecha de modificación -->
@@ -320,20 +320,24 @@ import { useGuardarPerfil } from '@/modules/perfiles/composables/customDataTable
 import { useApi } from '@/composables/use-api';
 import type { PerfilResponse } from '@/modules/perfiles/dto/PerfilResponseGet';
 import { useConsultarItemCatalogo } from '@/modules/perfiles/composables/customDataTableComponentsResponse';
+import { useCrearPerfilComponente } from '@/modules/perfiles/composables/CrearPerfilYComponentes';
+
 import type { ItemCatalogo } from '@/modules/perfiles/dto/itemCatalogo.dto';
 import { watch } from 'vue';
+
 
 onMounted(async () => {
     await obtenerPerfiles();
     cargarComponentes(); // Llama a la función al montar el componente
 });
 
-const irAPerfilSettings = () => {
-    router.replace('/perfil-settings');
+const irAPerfilSettings = (perfilId: number) => {
+    router.push(`/perfil-settings/${perfilId}`);
 };
 
 const router = useRouter();
 const guardarPerfil = useGuardarPerfil();
+const crearPerfilyComponente = useCrearPerfilComponente();
 const mostrarModal = ref(false);
 const nombre = ref('');
 const nivel = ref('');
@@ -364,8 +368,11 @@ console.log("Opciones en el store", opciones.value)
 
 
 
+
 const obtenerPerfiles = async () => {
+
     const usuarioId = localStorage.getItem('usuarioId');
+    const estado = '1';
 
     if (!usuarioId) {
         console.error('No se encontró el ID de usuario');
@@ -375,10 +382,10 @@ const obtenerPerfiles = async () => {
     try {
         console.log('Llamando a la API para obtener perfiles del usuario:', usuarioId);
 
-        // Realiza la llamada a la API y obtén la respuesta
-        const response = await useApi.get(`/api/v1/perfiles_usuario/${usuarioId}`);
+       
+        const response = await useApi.get(`/api/v1/perfiles_usuario/${usuarioId}/${estado}`);
 
-        console.log('Respuesta de la API:', response.data); // Muestra la respuesta de la API cruda
+        console.log('Respuesta de la API:', response.data); 
 
         // Mapea la respuesta de la API a la estructura de tu interfaz PerfilResponse
         perfiles.value = response.data.map((perfil: { Id: number; Perfil: string; Dificultad: string; Estado: string; Fecha: string }) => ({
@@ -395,7 +402,7 @@ const obtenerPerfiles = async () => {
             perf_fecha_actualizacion: perfil.Fecha, // Usar la misma fecha si es necesario
         }));
 
-        console.log('Perfiles obtenidos después de mapear:', perfiles.value); // Imprime el resultado mapeado
+        console.log('Perfiles obtenidos después de mapear:', perfiles.value); 
     } catch (error) {
         console.error('Error al obtener los perfiles:', error);
     }
@@ -423,9 +430,7 @@ const cerrarModal = () => {
     mostrarModal.value = false;
 };
 
-//Guardar datos del perfil creado
 const guardar = async () => {
-
     const usuarioId = localStorage.getItem('usuarioId');
 
     console.log('Guardando edición...'); // Para verificar que la función se está llamando
@@ -433,16 +438,14 @@ const guardar = async () => {
     console.log('Nombre guardado:', nombreEditar.value);
     console.log('Nivel guardado:', nivelEditar.value);
 
+    // Obtener los IDs de los componentes seleccionados
     const idsComponentesGuardados = opciones.value.map(codigo => {
-        // Busca el componente en la lista que ya tienes cargada
         const componente = componentes.value.find(comp => comp['Item Código'] === codigo);
         return componente ? componente.Id : null; // Si encuentra el componente, devuelve su ID; si no, devuelve null
     });
 
     console.log('Componentes guardados (IDs):', idsComponentesGuardados);
-
     console.log('Id usuario:', usuarioId);
-
 
     // Validaciones
     if (!nombre.value) {
@@ -472,7 +475,7 @@ const guardar = async () => {
         return;
     }
 
-    // Preparar datos
+    // Preparar datos para el perfil
     const perfilDto = {
         perf_nombre: nombre.value,
         perf_nivel_contribucion: nivel.value,
@@ -481,7 +484,40 @@ const guardar = async () => {
 
     try {
         // Llamar la mutación para guardar el perfil
-        await guardarPerfil.mutateAsync(perfilDto);
+        const perfilCreado = await guardarPerfil.mutateAsync(perfilDto);
+        
+        // Asegúrate de que la respuesta tenga el ID correcto
+        const perfilId = perfilCreado.perf_id; // Cambia esto según la estructura de tu respuesta
+
+        // Verificar que perfilId se ha recibido correctamente
+        if (!perfilId) {
+            throw new Error('El ID del perfil no se ha recibido correctamente.');
+        }
+
+        // Crear el mapeo de componentes
+        const componenteMapping = {
+            "Disc": idsComponentesGuardados.find(id => id === 1) || 0,
+            "Curricul": idsComponentesGuardados.find(id => id === 2) || 0,
+            "Conoc": idsComponentesGuardados.find(id => id === 3) || 0,
+            "Comp": idsComponentesGuardados.find(id => id === 4) || 0,
+            "Vide": idsComponentesGuardados.find(id => id === 5) || 0
+        };
+
+        // Crear el objeto para los componentes
+        const perfilComponenteDto = {
+            perf_id: perfilId,
+            disc_id: componenteMapping["Disc"],
+            curr_id: componenteMapping["Curricul"],
+            cono_id: componenteMapping["Conoc"],
+            comp_id: componenteMapping["Comp"],
+            vide_id: componenteMapping["Vide"],
+            pcom_anuncio: "Colocar aquí el anuncio del perfil en cuestión"
+        };
+
+        console.log('Datos del componente a enviar:', perfilComponenteDto); // Verifica los datos
+
+        // Llamar la mutación para crear el perfil-componente
+        await crearPerfilyComponente.mutateAsync(perfilComponenteDto);
 
         Swal.fire({
             icon: 'success',
@@ -496,8 +532,14 @@ const guardar = async () => {
         }, 100);
     } catch (error) {
         console.error('Error guardando el perfil:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un problema al guardar el perfil. Inténtalo de nuevo más tarde.',
+        });
     }
 };
+
 
 
 // Función para abrir el modal de edición

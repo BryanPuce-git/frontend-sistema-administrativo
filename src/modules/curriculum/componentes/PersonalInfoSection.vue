@@ -139,6 +139,8 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogoEstadoCivil';
+
 
 // Estado para manejar qué sección está activa
 const personalInfoActive = ref(false);
@@ -154,4 +156,7 @@ const discapacidad = ref(null);
 
 // Estado para los campos excluyentes
 //   const excluyentes = ref<string[]>([]);
+const estadoCivilDatos = useConsultarCatalogo();
+const codigoCatalogo = 'EST-CI';
+const catalogoSeleccionado = ref(null);
 </script>

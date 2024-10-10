@@ -23,18 +23,20 @@
             <!-- Nombre -->
             <div class="mb-4">
               <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
-              <input type="text" id="nombre" v-model="nombre" class="mt-1 block w-full border-gray-300 rounded-md">
+              <input type="text" id="nombre" v-model="nombreRecibido"
+                class="mt-1 block w-full border-gray-300 rounded-md">
             </div>
             <!-- Nivel -->
             <div class="mb-4">
               <label for="nivel" class="block text-sm font-medium text-gray-700">Nivel del perfil</label>
-              <input type="text" id="nivel" v-model="nivel" class="mt-1 block w-full border-gray-300 rounded-md">
+              <input type="text" id="nivel" v-model="nivelRecibido"
+                class="mt-1 block w-full border-gray-300 rounded-md">
             </div>
             <!-- Descripción general (incluye Responsabilidades y Requisitos) -->
             <div class="mb-4">
               <label for="descripcionGeneral" class="block text-sm font-medium text-gray-700">Descripción</label>
               <textarea id="descripcionGeneral" class="mt-1 block w-full border-gray-300 rounded-md" rows="10"
-                v-model="descripcionGeneral"
+                v-model="anuncio"
                 placeholder="Aquí puedes poner una descripción de las responsabilidades y requisitos..."></textarea>
             </div>
           </div>
@@ -164,18 +166,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { usePerfilStore } from '@/stores/use-perfil.store';
+import { useConsultarPerfil } from '@/modules/perfiles/composables/useConsultarPerfil';
+import type { PerfilComponenteResponse } from '../dto/PerfilComponenteResponse.dto';
 
 const perfilStore = usePerfilStore();
 const nombre = perfilStore.nombre;
 const nivel = perfilStore.nivel;
 // const opciones = perfilStore.opciones;
-
-const descripcionGeneral = ref('');
 const router = useRouter();
+const route = useRoute();
+
+// const perfilSeleccionado = ref<PerfilComponenteResponse[]>([]);
+const consultarPerfil = useConsultarPerfil();
+const nombreRecibido = ref('');
+const nivelRecibido = ref('');
+const anuncio = ref('');
+
+const obtenerDatoDePerfil = async (perfilId: number, estado: number) => {
+  try {
+    const response = await consultarPerfil.mutateAsync({ perfilId, estado });
+    // console.log('Respuesta de la API:', response);
+    if (Array.isArray(response) && response.length > 0) {
+      const perfil = response[0];  
+      nombreRecibido.value = perfil.Perfil;
+      nivelRecibido.value = perfil.Dificultad;
+      anuncio.value = perfil.Anuncio;
+
+      // console.log(nombreRecibido.value, nivelRecibido.value, anuncio.value);
+    }
+
+  } catch (error) {
+    console.error('Error al obtener los datos del perfil:', error);
+  }
+};
+
+onMounted(() => {
+  // const perfilId = Number(route.params.perfilId);
+  const perfilId = 1;
+  const estado = 1;
+  console.log(perfilId, estado)
+  if (perfilId) {
+    obtenerDatoDePerfil(perfilId, estado);
+  }
+});
 
 const irACurriculum = () => {
   router.replace('/curriculum');
