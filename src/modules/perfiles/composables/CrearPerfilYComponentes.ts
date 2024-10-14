@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import type { AxiosError } from 'axios';
 import type { ServerError } from '../dto/serverError.dto';
 import type { PerfilComponenteCreate } from '../dto/PerfilComponenteCreate.dto'; // Asegúrate de tener un tipo para Perfil
-
+ 
 export const useCrearPerfilComponente = () => {
   const mutation = useMutation({
     // Función de la mutación: recibe un objeto con los datos del nuevo perfil y componentes

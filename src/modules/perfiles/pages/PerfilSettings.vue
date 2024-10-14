@@ -3,8 +3,48 @@
     <!-- Contenido principal -->
     <div class="flex-1 flex flex-col">
       <!-- Encabezado -->
-      <header class="bg-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-xl font-semibold">Edición del perfil - Desarrollador de software</h1>
+      <header class="bg-white shadow p-4 flex justify-between items-center relative">
+        <h1 class="text-xl font-semibold">Edición del perfil - {{ nombreRecibido }}</h1>
+
+        <!-- Lista de Componentes ya asignados -->
+        <ul class="list-disc ml-3 mt-1">
+          <li v-for="componente in componentesAsignados" :key="componente.id_componente" class="text-gray-600">
+            {{ componente.no_componente }}
+          </li>
+        </ul>
+
+        <!-- Botón para agregar componentes con un ícono SVG de "+" -->
+        <button @click="mostrarComponentesDisponibles = !mostrarComponentesDisponibles"
+          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded flex items-center hover:bg-blue-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"
+            aria-hidden="true">
+            <path fill-rule="evenodd"
+              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+              clip-rule="evenodd" />
+          </svg>
+          Agregar Componente
+        </button>
+
+        <!-- Dropdown de Componentes Disponibles -->
+        <div v-if="mostrarComponentesDisponibles" class="absolute right-2 z-10 bg-white shadow-lg p-1 rounded mt-1 w-25"
+          style="top: 100%;">
+          <h2 class="text-lg font-semibold">Componentes Disponibles</h2>
+          <ul class="mt-3">
+            <!-- Comprobamos si hay componentes disponibles -->
+            <template v-if="componentesDisponibles.length > 0">
+              <li v-for="componente in componentesDisponibles" :key="componente.id_componente">
+                <button @click="asignarComponente(componente)" class="text-blue-600 hover:underline w-full text-left">
+                  {{ componente.no_componente }}
+                </button>
+              </li>
+            </template>
+            <template v-else>
+              <li class="text-gray-500 text-center">Sin componentes</li>
+            </template>
+          </ul>
+        </div>
+
+
       </header>
 
       <!-- Contenido del cuerpo -->
@@ -24,13 +64,13 @@
             <div class="mb-4">
               <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
               <input type="text" id="nombre" v-model="nombreRecibido"
-                class="mt-1 block w-full border-gray-300 rounded-md">
+                class="mt-1 block w-full border-gray-300 rounded-md" />
             </div>
             <!-- Nivel -->
             <div class="mb-4">
               <label for="nivel" class="block text-sm font-medium text-gray-700">Nivel del perfil</label>
               <input type="text" id="nivel" v-model="nivelRecibido"
-                class="mt-1 block w-full border-gray-300 rounded-md">
+                class="mt-1 block w-full border-gray-300 rounded-md" />
             </div>
             <!-- Descripción general (incluye Responsabilidades y Requisitos) -->
             <div class="mb-4">
@@ -59,10 +99,11 @@
               <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoCurriculum"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-red-500">
+                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-red-500" />
                 <span
                   class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoCurriculum }}%</span>
+                    pesoCurriculum
+                  }}%</span>
               </div>
             </div>
 
@@ -75,10 +116,11 @@
               <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoConocimiento"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-blue-500">
+                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-blue-500" />
                 <span
                   class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoConocimiento }}%</span>
+                    pesoConocimiento
+                  }}%</span>
               </div>
             </div>
 
@@ -91,10 +133,11 @@
               <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoCompetencias"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-purple-500">
+                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-purple-500" />
                 <span
                   class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-purple-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoCompetencias }}%</span>
+                    pesoCompetencias
+                  }}%</span>
               </div>
             </div>
 
@@ -107,10 +150,11 @@
               <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoVideoEntrevista"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-orange-500">
+                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-orange-500" />
                 <span
                   class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoVideoEntrevista }}%</span>
+                    pesoVideoEntrevista
+                  }}%</span>
               </div>
             </div>
 
@@ -165,6 +209,7 @@
   </DashboardLayout>
 </template>
 
+
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
@@ -172,7 +217,8 @@ import { useRoute } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { usePerfilStore } from '@/stores/use-perfil.store';
 import { useConsultarPerfil } from '@/modules/perfiles/composables/useConsultarPerfil';
-import type { PerfilComponenteResponse } from '../dto/PerfilComponenteResponse.dto';
+// import type { PerfilComponenteResponse } from '../dto/PerfilComponenteResponse.dto';
+import { useApi } from '@/composables/use-api';
 
 const perfilStore = usePerfilStore();
 const nombre = perfilStore.nombre;
@@ -183,16 +229,21 @@ const route = useRoute();
 
 // const perfilSeleccionado = ref<PerfilComponenteResponse[]>([]);
 const consultarPerfil = useConsultarPerfil();
-const nombreRecibido = ref('');
+
 const nivelRecibido = ref('');
 const anuncio = ref('');
+const componentesDisponibles = ref<Componente[]>([]);
+const nombreRecibido = ref<string>('');
+const componentesAsignados = ref<Componente[]>([]); // Arreglo de componentes asignados
+const mostrarComponentesDisponibles = ref<boolean>(false); // Estado de visibilidad del dropdown
+
 
 const obtenerDatoDePerfil = async (perfilId: number) => {
   try {
     const response = await consultarPerfil.mutateAsync({ perfilId });
     // console.log('Respuesta de la API:', response);
     if (Array.isArray(response) && response.length > 0) {
-      const perfil = response[0];  
+      const perfil = response[0];
       nombreRecibido.value = perfil.Perfil;
       nivelRecibido.value = perfil.Dificultad;
       anuncio.value = perfil.Anuncio;
@@ -205,12 +256,37 @@ const obtenerDatoDePerfil = async (perfilId: number) => {
   }
 };
 
+
+// Función para obtener los componentes disponibles
+const agregarComponente = async (perfilId: number) => {
+  try {
+    const response = await useApi.get(`/api/v1/Perfiles-Componentes/NoComponentes/${perfilId}`);
+
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      componentesDisponibles.value = response.data; // Guardar los componentes disponibles
+    } else {
+      console.warn('No hay componentes disponibles para agregar.');
+    }
+  } catch (error) {
+    console.error('Error al obtener los componentes disponibles:', error);
+  }
+};
+
+// Función para asignar un componente al perfil
+const asignarComponente = (componente: Componente) => {
+  componentesAsignados.value.push(componente); // Agregar componente a la lista de asignados
+  componentesDisponibles.value = componentesDisponibles.value.filter(c => c.id_componente !== componente.id_componente); // Removerlo de la lista de disponibles
+  mostrarComponentesDisponibles.value = false; // Cerrar dropdown
+};
+
+
 onMounted(() => {
   const perfilId = Number(route.params.perfilId);
 
   console.log(perfilId)
   if (perfilId) {
     obtenerDatoDePerfil(perfilId);
+    agregarComponente(perfilId);
   }
 });
 

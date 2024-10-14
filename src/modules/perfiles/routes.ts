@@ -14,6 +14,12 @@ const routes: Array<RouteRecordRaw> = [
     meta: { requiresAuth: true }, 
   },
   {
+    path: '/perfil-settings', // Ruta sin perfilId
+    name: 'perfil-settings-no-id',
+    component: () => import('./pages/PerfilSettings.vue'), // Mismo componente o uno diferente si es necesario
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/perfil-launch',
     name: 'perfil-launch',
     component: () => import('./pages/LaunchPage.vue'),
