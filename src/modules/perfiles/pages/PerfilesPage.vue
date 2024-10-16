@@ -216,7 +216,6 @@
                 <div class="fixed inset-0 transition-opacity" aria-hidden="true">
                     <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
                 </div>
-
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full md:max-w-2xl lg:max-w-3xl"
@@ -281,13 +280,13 @@
                                             <label v-for="componente in componentes" :key="componente.Id"
                                                 class="flex items-center p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200 ease-in-out">
                                                 <input type="checkbox" v-model="opcionesEditar"
-                                                    :value="componente['Item Código']"
+                                                    :value="componente['Item Nombre']"
                                                     class="form-checkbox text-orange-500 mr-3" />
                                                 <span class="text-gray-800">{{ componente['Item Nombre'] }}</span>
-                                                <!-- Mostramos el 'Item Nombre' -->
                                             </label>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -306,6 +305,7 @@
                 </div>
             </div>
         </div>
+
 
     </DashboardLayout>
 </template>
@@ -379,10 +379,10 @@ const obtenerPerfiles = async () => {
     }
 
     try {
-        console.log('Llamando a la API para obtener perfiles del usuario:', usuarioId);
+        // console.log('Llamando a la API para obtener perfiles del usuario:', usuarioId);
 
         const response = await useApi.get(`/api/v1/perfiles_usuario/${usuarioId}/${estado}`);
-        console.log('Respuesta de la API:', response.data);
+        // console.log('Respuesta de la API:', response.data);
 
         // Verifica que la respuesta sea un array
         if (!Array.isArray(response.data)) {
@@ -411,7 +411,7 @@ const obtenerPerfiles = async () => {
             };
         });
 
-        console.log('Perfiles obtenidos después de mapear:', perfiles.value);
+        // console.log('Perfiles obtenidos después de mapear:', perfiles.value);
 
     } catch (error) {
         console.error('Error al obtener los perfiles:', error);
@@ -554,14 +554,21 @@ const guardar = async () => {
 
 
 
-// Función para abrir el modal de edición
 const abrirModalEditar = (perfil: PerfilComponenteResponse) => {
-    idPerfil.value = perfil.perf_id; // Asigna el ID del perfil aquí
+    idPerfil.value = perfil.perf_id;
     mostrarModalEditar.value = true;
     nombreEditar.value = perfil.Perfil;
     nivelEditar.value = perfil.Dificultad;
-    // opcionesEditar.value = perfil.Componente || []; // Asigna las opciones del perfil
+
+    // Asignar y dividir los componentes, conviértelos a mayúsculas
+    opcionesEditar.value = perfil.Componente.split(',').map(item => item.trim().toUpperCase());
+
+    console.log('Opciones para editar (opcionesEditar):', opcionesEditar.value);
+
+
 };
+
+
 
 // Función para cerrar el modal de edición
 const cerrarModalEditar = () => {
@@ -576,10 +583,12 @@ const guardarEdicion = async () => {
     console.log('ID de Perfil:', idPerfil.value); // Verifica que el ID esté definido
     console.log('Nombre Editar:', nombreEditar.value);
     console.log('Nivel Editar:', nivelEditar.value);
-    const idsComponentesGuardados = opcionesEditar.value.map(codigo => {
-        const componente = componentes.value.find(comp => comp['Item Código'] === codigo);
+
+    // Obtener los IDs de los componentes seleccionados
+    const idsComponentesGuardados = opcionesEditar.value.map(nombre => {
+        const componente = componentes.value.find(comp => comp['Item Nombre'] === nombre); // Cambié 'Item Código' a 'Item Nombre'
         return componente ? componente.Id : null; // Si encuentra el componente, devuelve su ID; si no, devuelve null
-    });
+    }).filter(id => id !== null); // Filtrar nulls para obtener solo los IDs válidos
 
     console.log('Componentes guardados (IDs):', idsComponentesGuardados);
 
@@ -618,6 +627,7 @@ const guardarEdicion = async () => {
         perf_nombre: nombreEditar.value,
         perf_nivel_contribucion: nivelEditar.value,
         usu_id: Number(usuarioId),
+        // Agregando los IDs de los componentes seleccionados
         // Agrega otros campos si es necesario
     };
 
@@ -625,6 +635,17 @@ const guardarEdicion = async () => {
         // Cambiar aquí a PATCH
         await useApi.patch(`/api/v1/perfiles/${idPerfil.value}`, perfilDto); // Llama a la API para actualizar el perfil
 
+        // Ahora actualizamos los componentes uno a uno
+        const allComponentIds = [1, 2, 3, 4, 5]; // IDs de todos los componentes (ajusta esto según tus datos)
+
+        for (const idComp of allComponentIds) {
+            // Comprueba si el componente está seleccionado
+            const isSelected = idsComponentesGuardados.includes(idComp);
+            const valor = isSelected ? idComp : 0; // Si está seleccionado, usa su ID; si no, usa 0
+
+            // Llama a la API para actualizar el componente
+            await useApi.patch(`/api/v1/Perfiles-Componentes/${idPerfil.value}/${idComp}/${valor}`);
+        }
         Swal.fire({
             icon: 'success',
             title: 'Perfil Actualizado',
@@ -656,31 +677,42 @@ const borrarPerfil = async (perfilId: number): Promise<void> => {
 };
 
 
-// Función para cargar los componentes desde la API
 const cargarComponentes = async () => {
     try {
-        // Llama a la función mutateAsync pasándole el código
+        // Llama a la función mutateAsync para obtener los componentes
         const response = await query.mutateAsync(catalogoCodigo);
 
-        // Almacena los datos recibidos en la variable "componentes"
+        // Guarda los componentes en la variable
         componentes.value = response;
+
+        // Imprime los nombres de los componentes
+        console.log('Componentes cargados:', componentes.value.map(comp => comp['Item Nombre']));
+
+        // Imprime los IDs y nombres de los componentes
+        console.log('IDs y nombres de los componentes:');
+        componentes.value.forEach(comp => {
+            console.log(`ID: ${comp['Id']}, Nombre: ${comp['Item Nombre']}`);
+        });
 
     } catch (error) {
         console.error('Error al cargar los componentes del catálogo:', error);
     }
 };
 
-const resetearSeleccion = () => {
-    opcionesEditar.value = [];  // Limpia las opciones seleccionadas
-};
 
-watch(
-    mostrarModalEditar, // Esta es la propiedad que estamos observando
-    (nuevoValor) => { // Este es el callback que se ejecutará al cambiar
-        if (nuevoValor) {
-            resetearSeleccion(); // Cuando el modal se abre, limpia las opciones seleccionadas
-        }
-    }
-);
+
+
+// const resetearSeleccion = () => {
+//     opcionesEditar.value = [];  // Limpia las opciones seleccionadas
+// };
+
+// watch(
+//     mostrarModalEditar, // Esta es la propiedad que estamos observando
+//     (nuevoValor) => { // Este es el callback que se ejecutará al cambiar
+//         if (nuevoValor) {
+//             resetearSeleccion(); // Cuando el modal se abre, limpia las opciones seleccionadas
+//         }
+//     }
+// );
 
 </script>
