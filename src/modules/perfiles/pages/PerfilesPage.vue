@@ -584,6 +584,11 @@ const guardarEdicion = async () => {
     console.log('Nombre Editar:', nombreEditar.value);
     console.log('Nivel Editar:', nivelEditar.value);
 
+    const response = await useApi.get('/api/v1/item-catalogo/COMP');
+    const allComponents: ItemCatalogo[] = response.data; // Especificamos que el tipo es un array de Componente
+    const allComponentIds = allComponents.map((comp: ItemCatalogo) => comp.Id);
+    console.log('IDs de todos los componentes obtenidos:', allComponentIds);
+
     // Obtener los IDs de los componentes seleccionados
     const idsComponentesGuardados = opcionesEditar.value.map(nombre => {
         const componente = componentes.value.find(comp => comp['Item Nombre'] === nombre); // Cambié 'Item Código' a 'Item Nombre'
@@ -633,19 +638,18 @@ const guardarEdicion = async () => {
 
     try {
         // Cambiar aquí a PATCH
-        await useApi.patch(`/api/v1/perfiles/${idPerfil.value}`, perfilDto); // Llama a la API para actualizar el perfil
+        await useApi.patch(`/api/v1/perfiles/${idPerfil.value}`, perfilDto);
 
-        // Ahora actualizamos los componentes uno a uno
-        const allComponentIds = [1, 2, 3, 4, 5]; // IDs de todos los componentes (ajusta esto según tus datos)
+
 
         for (const idComp of allComponentIds) {
-            // Comprueba si el componente está seleccionado
             const isSelected = idsComponentesGuardados.includes(idComp);
             const valor = isSelected ? idComp : 0; // Si está seleccionado, usa su ID; si no, usa 0
 
             // Llama a la API para actualizar el componente
             await useApi.patch(`/api/v1/Perfiles-Componentes/${idPerfil.value}/${idComp}/${valor}`);
         }
+
         Swal.fire({
             icon: 'success',
             title: 'Perfil Actualizado',

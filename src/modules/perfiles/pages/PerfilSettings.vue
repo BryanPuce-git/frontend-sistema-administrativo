@@ -81,80 +81,84 @@
             </div>
           </div>
 
-          <!-- Paneles de Configuración y Sumatoria de pesos -->
+
+
+
           <div class="space-y-4 flex flex-col">
-            <div class="bg-white shadow p-4 rounded-lg flex-1 ">
+            <!-- Componente DISC -->
+            <div v-if="tieneComponente('DISC')" class="bg-white shadow p-4 rounded-lg flex-1">
               <div class="flex justify-between items-center mb-2">
                 <h3 class="text-sm font-semibold text-gray-700">DISC</h3>
                 <span class="text-green-500">Completo</span>
               </div>
             </div>
 
-            <div class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
+            <!-- Componente CURRICULUM -->
+            <div v-if="tieneComponente('CURRICULUM')" class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
               <div @click="irACurriculum"
                 class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
                 <h3 class="text-sm font-semibold text-gray-700">CURRICULUM</h3>
                 <span class="text-red-500">Pendiente</span>
               </div>
-              <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoCurriculum"
                   class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-red-500" />
                 <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoCurriculum
-                  }}%</span>
+                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
+                  {{ pesoCurriculum }}%
+                </span>
               </div>
             </div>
 
-            <div class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
+            <!-- Componente CONOCIMIENTO -->
+            <div v-if="tieneComponente('CONOCIMIENTO')" class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
               <div @click="irAKnowledge"
                 class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
                 <h3 class="text-sm font-semibold text-gray-700">CONOCIMIENTO</h3>
                 <span class="text-blue-500">Pendiente</span>
               </div>
-              <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoConocimiento"
                   class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-blue-500" />
                 <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoConocimiento
-                  }}%</span>
+                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
+                  {{ pesoConocimiento }}%
+                </span>
               </div>
             </div>
 
-            <div class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
+            <!-- Componente COMPETENCIAS -->
+            <div v-if="tieneComponente('COMPETENCIAS')" class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
               <div @click="irACompetencia"
                 class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
                 <h3 class="text-sm font-semibold text-gray-700">COMPETENCIAS</h3>
                 <span class="text-purple-500">Pendiente</span>
               </div>
-              <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoCompetencias"
                   class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-purple-500" />
                 <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-purple-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoCompetencias
-                  }}%</span>
+                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-purple-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
+                  {{ pesoCompetencias }}%
+                </span>
               </div>
             </div>
 
-            <div class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
+            <!-- Componente VIDEO ENTREVISTA -->
+            <div v-if="tieneComponente('VIDEO ENTREVISTA')"
+              class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
               <div @click="irAEntrevista"
                 class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
                 <h3 class="text-sm font-semibold text-gray-700">VIDEO ENTREVISTA</h3>
                 <span class="text-red-500">Pendiente</span>
               </div>
-              <!-- Slider para el peso -->
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoVideoEntrevista"
                   class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-orange-500" />
                 <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-md">{{
-                    pesoVideoEntrevista
-                  }}%</span>
+                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
+                  {{ pesoVideoEntrevista }}%
+                </span>
               </div>
             </div>
 
@@ -168,6 +172,9 @@
               </div>
             </div>
           </div>
+
+
+
         </div>
       </div>
 
@@ -234,8 +241,15 @@ const nivelRecibido = ref('');
 const anuncio = ref('');
 const componentesDisponibles = ref<Componente[]>([]);
 const nombreRecibido = ref<string>('');
-const componentesAsignados = ref<Componente[]>([]); // Arreglo de componentes asignados
+// Arreglo de componentes asignados
 const mostrarComponentesDisponibles = ref<boolean>(false); // Estado de visibilidad del dropdown
+
+const componentesAsignados = ref<Componente[]>([]);// Aquí se guardan los componentes obtenidos de la API
+const pesoCurriculum = ref(0);
+const pesoConocimiento = ref(0);
+const pesoCompetencias = ref(0);
+const pesoVideoEntrevista = ref(0);
+
 
 
 const obtenerDatoDePerfil = async (perfilId: number) => {
@@ -272,23 +286,79 @@ const agregarComponente = async (perfilId: number) => {
   }
 };
 
-// Función para asignar un componente al perfil
+
 const asignarComponente = (componente: Componente) => {
-  componentesAsignados.value.push(componente); // Agregar componente a la lista de asignados
-  componentesDisponibles.value = componentesDisponibles.value.filter(c => c.id_componente !== componente.id_componente); // Removerlo de la lista de disponibles
+  // Solo agregar el componente seleccionado
+  if (!componentesAsignados.value.some(c => c.id_componente === componente.id_componente)) {
+    componentesAsignados.value.push(componente);
+    console.log(`Componente agregado: ${componente.no_componente}`);
+  }
+
+  // Eliminarlo de la lista de disponibles
+  componentesDisponibles.value = componentesDisponibles.value.filter(c => c.id_componente !== componente.id_componente);
   mostrarComponentesDisponibles.value = false; // Cerrar dropdown
 };
+
+
+// Función para obtener los componentes por ID de perfil
+const obtenerComponentesPorPerfilId = async (perfilId: number) => {
+  try {
+    const response = await useApi.get(`/api/v1/Perfiles-Componentes/Componentes/${perfilId}`);
+
+    console.log('Respuesta de componentes:', response.data); // Agrega esta línea
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      componentesAsignados.value = response.data;
+      console.log('Componentes Asignados en el ARRAY:', componentesAsignados.value); // Para depuración
+      verificarComponentes(["CONOCIMIENTO", "VIDEO ENTREVISTA", "DISC", "CURRICULUM", "COMPETENCIAS"]);
+
+    } else {
+      console.warn('No hay componentes asignados para este perfil.');
+      componentesAsignados.value = [];
+    }
+  } catch (error) {
+    console.error('Error al obtener los componentes del perfil:', error);
+  }
+};
+
+
+
+const tieneComponente = (nombreComponente: string) => {
+  console.log('Verificando componente:', nombreComponente);
+
+  // Verifica si existe el componente en el array
+  const existe = componentesAsignados.value.some(
+    (componente) => componente.no_componente === nombreComponente
+  );
+
+  return existe;
+};
+
+// Ejemplo de uso para verificar varios componentes
+const verificarComponentes = (componentesABuscar: string[]) => {
+  componentesABuscar.forEach((nombreComponente) => {
+    const existe = tieneComponente(nombreComponente);
+    if (existe) {
+      console.log(`El componente ${nombreComponente} está habilitado.`);
+      // Aquí puedes habilitar el componente en tu estado
+    } else {
+      console.log(`El componente ${nombreComponente} no existe.`);
+    }
+  });
+};
+
 
 
 onMounted(() => {
   const perfilId = Number(route.params.perfilId);
 
-  console.log(perfilId)
+  console.log('Perfil ID:', perfilId); // Verifica el ID
   if (perfilId) {
     obtenerDatoDePerfil(perfilId);
     agregarComponente(perfilId);
+    obtenerComponentesPorPerfilId(perfilId);
   }
 });
+
 
 const irACurriculum = () => {
   router.replace('/curriculum');
@@ -313,10 +383,7 @@ const irAProceso = () => {
   router.replace('/perfil-launch');
 }
 
-const pesoCurriculum = ref(10);
-const pesoConocimiento = ref(10);
-const pesoCompetencias = ref(42);
-const pesoVideoEntrevista = ref(25);
+
 
 // Computed para la sumatoria de los pesos
 const sumatoriaPesos = computed(() => {
