@@ -11,10 +11,10 @@
           <li v-for="componente in componentesAsignados" :key="componente.id_componente" class="text-gray-600">
             {{ componente.no_componente }}
           </li>
-        </ul>
+        </ul> 
 
         <!-- Botón para agregar componentes con un ícono SVG de "+" -->
-        <button @click="mostrarComponentesDisponibles = !mostrarComponentesDisponibles"
+        <button @click="toggleComponentes"
           class="mt-4 bg-blue-500 text-white px-4 py-2 rounded flex items-center hover:bg-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"
             aria-hidden="true">
@@ -33,7 +33,8 @@
             <!-- Comprobamos si hay componentes disponibles -->
             <template v-if="componentesDisponibles.length > 0">
               <li v-for="componente in componentesDisponibles" :key="componente.id_componente">
-                <button @click="asignarComponente(componente)" class="text-blue-600 hover:underline w-full text-left">
+                <button @click="actualizarComponente(componente.pcom_id, componente.perf_id, componente.id_componente)"
+                  class="text-blue-600 hover:underline w-full text-left">
                   {{ componente.no_componente }}
                 </button>
               </li>
@@ -86,19 +87,41 @@
 
           <div class="space-y-4 flex flex-col">
             <!-- Componente DISC -->
-            <div v-if="tieneComponente('DISC')" class="bg-white shadow p-4 rounded-lg flex-1">
+            <div v-if="tieneComponente('DISC')" class="relative bg-white shadow p-4 rounded-lg flex-1">
               <div class="flex justify-between items-center mb-2">
                 <h3 class="text-sm font-semibold text-gray-700">DISC</h3>
-                <span class="text-green-500">Completo</span>
+                <div class="relative">
+                  <button @click.stop="toggleMenu('DISC')"
+                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                  <div v-if="menuAbierto === 'DISC'"
+                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    <ul>
+                      <li @click.stop="eliminarComponente('DISC')" class="p-2 hover:bg-red-100 cursor-pointer">Eliminar
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
+              <span class="text-green-500">Completo</span>
             </div>
 
             <!-- Componente CURRICULUM -->
-            <div v-if="tieneComponente('CURRICULUM')" class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
-              <div @click="irACurriculum"
-                class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
+            <div v-if="tieneComponente('CURRICULUM')"
+              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+              <div @click="irACurriculum" class="flex justify-between items-center mb-2 p-2">
                 <h3 class="text-sm font-semibold text-gray-700">CURRICULUM</h3>
-                <span class="text-red-500">Pendiente</span>
+                <div class="relative">
+                  <button @click.stop="toggleMenu('CURRICULUM')"
+                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                  <div v-if="menuAbierto === 'CURRICULUM'"
+                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    <ul>
+                      <li @click.stop="eliminarComponente('CURRICULUM')" class="p-2 hover:bg-red-100 cursor-pointer">
+                        Eliminar
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoCurriculum"
@@ -111,11 +134,21 @@
             </div>
 
             <!-- Componente CONOCIMIENTO -->
-            <div v-if="tieneComponente('CONOCIMIENTO')" class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
-              <div @click="irAKnowledge"
-                class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
+            <div v-if="tieneComponente('CONOCIMIENTO')"
+              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+              <div @click="irAKnowledge" class="flex justify-between items-center mb-2 p-2">
                 <h3 class="text-sm font-semibold text-gray-700">CONOCIMIENTO</h3>
-                <span class="text-blue-500">Pendiente</span>
+                <div class="relative">
+                  <button @click.stop="toggleMenu('CONOCIMIENTO')"
+                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                  <div v-if="menuAbierto === 'CONOCIMIENTO'"
+                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    <ul>
+                      <li @click.stop="eliminarComponente('CONOCIMIENTO')" class="p-2 hover:bg-red-100 cursor-pointer">
+                        Eliminar</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoConocimiento"
@@ -128,11 +161,21 @@
             </div>
 
             <!-- Componente COMPETENCIAS -->
-            <div v-if="tieneComponente('COMPETENCIAS')" class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
-              <div @click="irACompetencia"
-                class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
+            <div v-if="tieneComponente('COMPETENCIAS')"
+              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+              <div @click="irACompetencia" class="flex justify-between items-center mb-2 p-2">
                 <h3 class="text-sm font-semibold text-gray-700">COMPETENCIAS</h3>
-                <span class="text-purple-500">Pendiente</span>
+                <div class="relative">
+                  <button @click.stop="toggleMenu('COMPETENCIAS')"
+                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                  <div v-if="menuAbierto === 'COMPETENCIAS'"
+                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    <ul>
+                      <li @click.stop="eliminarComponente('COMPETENCIAS')" class="p-2 hover:bg-red-100 cursor-pointer">
+                        Eliminar</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoCompetencias"
@@ -146,11 +189,21 @@
 
             <!-- Componente VIDEO ENTREVISTA -->
             <div v-if="tieneComponente('VIDEO ENTREVISTA')"
-              class="bg-white shadow p-4 rounded-lg flex-1 cursor-pointer">
-              <div @click="irAEntrevista"
-                class="flex justify-between items-center mb-2 hover:bg-gray-200 transition-colors duration-200 p-2 rounded">
+              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+              <div @click="irAEntrevista" class="flex justify-between items-center mb-2 p-2">
                 <h3 class="text-sm font-semibold text-gray-700">VIDEO ENTREVISTA</h3>
-                <span class="text-red-500">Pendiente</span>
+                <div class="relative">
+                  <button @click.stop="toggleMenu('VIDEO ENTREVISTA')"
+                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                  <div v-if="menuAbierto === 'VIDEO ENTREVISTA'"
+                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    <ul>
+                      <li @click.stop="eliminarComponente('VIDEO ENTREVISTA')"
+                        class="p-2 hover:bg-red-100 cursor-pointer">
+                        Eliminar</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
               <div class="relative">
                 <input type="range" min="0" max="100" v-model="pesoVideoEntrevista"
@@ -162,6 +215,7 @@
               </div>
             </div>
 
+            <!-- Sumatoria de Pesos -->
             <div class="bg-white shadow p-4 rounded-lg">
               <h3 class="text-lg font-semibold text-yellow-500">Sumatoria de pesos</h3>
               <div class="flex items-center mt-2">
@@ -172,7 +226,6 @@
               </div>
             </div>
           </div>
-
 
 
         </div>
@@ -278,6 +331,7 @@ const agregarComponente = async (perfilId: number) => {
 
     if (Array.isArray(response.data) && response.data.length > 0) {
       componentesDisponibles.value = response.data; // Guardar los componentes disponibles
+      
     } else {
       console.warn('No hay componentes disponibles para agregar.');
     }
@@ -323,7 +377,7 @@ const obtenerComponentesPorPerfilId = async (perfilId: number) => {
 
 
 const tieneComponente = (nombreComponente: string) => {
-  console.log('Verificando componente:', nombreComponente);
+  // console.log('Verificando componente:', nombreComponente);
 
   // Verifica si existe el componente en el array
   const existe = componentesAsignados.value.some(
@@ -338,10 +392,10 @@ const verificarComponentes = (componentesABuscar: string[]) => {
   componentesABuscar.forEach((nombreComponente) => {
     const existe = tieneComponente(nombreComponente);
     if (existe) {
-      console.log(`El componente ${nombreComponente} está habilitado.`);
+      // console.log(`El componente ${nombreComponente} está habilitado.`);
       // Aquí puedes habilitar el componente en tu estado
     } else {
-      console.log(`El componente ${nombreComponente} no existe.`);
+      // console.log(`El componente ${nombreComponente} no existe.`);
     }
   });
 };
@@ -400,4 +454,49 @@ const mostrarModal = ref(false);
 const cerrarModal = () => {
   mostrarModal.value = false;
 }
+
+// Estado para controlar el menú desplegable
+const menuAbierto = ref<string | null>(null);
+
+
+// Función para alternar el menú
+const toggleMenu = (nombreComponente: string) => {
+  menuAbierto.value = menuAbierto.value === nombreComponente ? null : nombreComponente;
+};
+
+// Función para eliminar un componente
+const eliminarComponente = (nombreComponente: string) => {
+  componentesAsignados.value = componentesAsignados.value.filter(
+    (componente) => componente.no_componente !== nombreComponente
+  );
+  menuAbierto.value = null; // Cierra el menú después de eliminar
+};
+
+const toggleComponentes = async () => {
+  mostrarComponentesDisponibles.value = !mostrarComponentesDisponibles.value;
+
+  console.log("CCCCCC",mostrarComponentesDisponibles.value)
+  // Solo mostrar en consola si se está abriendo el dropdown
+  if (mostrarComponentesDisponibles.value) {
+    const perfilId = Number(route.params.perfilId);
+    await agregarComponente(perfilId); // Llama a la función para obtener los componentes no seleccionados
+  }
+};
+// Método para actualizar componente
+const actualizarComponente = async (idComponent:number, perfilId: number, valor : number) => {
+  
+  
+
+  const idComp = 1;
+  
+  try {
+    await useApi.patch(`/api/v1/Perfiles-Componentes/${perfilId}/${idComp}/${valor}`);
+    console.log(`Componente ${valor} actualizado correctamente.`); // Mensaje en consola
+    // Puedes hacer una llamada a obtenerComponentesDisponibles para refrescar la lista si es necesario
+  } catch (error) {
+    console.error('Error al actualizar el componente:', error);
+  } finally {
+    mostrarComponentesDisponibles.value = false; // Cerrar el dropdown después de seleccionar
+  }
+};
 </script>

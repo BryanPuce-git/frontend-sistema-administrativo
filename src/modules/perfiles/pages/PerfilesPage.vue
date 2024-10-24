@@ -649,7 +649,7 @@ const guardarEdicion = async () => {
             // Llama a la API para actualizar el componente
             await useApi.patch(`/api/v1/Perfiles-Componentes/${idPerfil.value}/${idComp}/${valor}`);
         }
-
+ 
         Swal.fire({
             icon: 'success',
             title: 'Perfil Actualizado',
