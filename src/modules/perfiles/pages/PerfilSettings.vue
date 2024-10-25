@@ -11,10 +11,10 @@
           <li v-for="componente in componentesAsignados" :key="componente.id_componente" class="text-gray-600">
             {{ componente.no_componente }}
           </li>
-        </ul> 
+        </ul>
 
         <!-- Botón para agregar componentes con un ícono SVG de "+" -->
-        <button @click="toggleComponentes"
+        <button @click="mostrarComponentesDisponibles = !mostrarComponentesDisponibles"
           class="mt-4 bg-blue-500 text-white px-4 py-2 rounded flex items-center hover:bg-blue-600">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"
             aria-hidden="true">
@@ -33,7 +33,7 @@
             <!-- Comprobamos si hay componentes disponibles -->
             <template v-if="componentesDisponibles.length > 0">
               <li v-for="componente in componentesDisponibles" :key="componente.id_componente">
-                <button @click="actualizarComponente(componente.pcom_id, componente.perf_id, componente.id_componente)"
+                <button @click="asignarComponente(componente)"
                   class="text-blue-600 hover:underline w-full text-left">
                   {{ componente.no_componente }}
                 </button>
@@ -44,7 +44,6 @@
             </template>
           </ul>
         </div>
-
 
       </header>
 
@@ -331,7 +330,7 @@ const agregarComponente = async (perfilId: number) => {
 
     if (Array.isArray(response.data) && response.data.length > 0) {
       componentesDisponibles.value = response.data; // Guardar los componentes disponibles
-      
+
     } else {
       console.warn('No hay componentes disponibles para agregar.');
     }
@@ -341,17 +340,25 @@ const agregarComponente = async (perfilId: number) => {
 };
 
 
-const asignarComponente = (componente: Componente) => {
-  // Solo agregar el componente seleccionado
+const asignarComponente = (componente : Componente) => {
+  // Solo agregar si el componente no está ya en la lista asignada
   if (!componentesAsignados.value.some(c => c.id_componente === componente.id_componente)) {
     componentesAsignados.value.push(componente);
     console.log(`Componente agregado: ${componente.no_componente}`);
+
+    // Asegurarse de que se envía como un arreglo
+    actualizarComponentes([componente.id_componente], componente.perf_id); // Envíalo como [id_componente]
   }
 
   // Eliminarlo de la lista de disponibles
   componentesDisponibles.value = componentesDisponibles.value.filter(c => c.id_componente !== componente.id_componente);
   mostrarComponentesDisponibles.value = false; // Cerrar dropdown
 };
+
+
+
+
+
 
 
 // Función para obtener los componentes por ID de perfil
@@ -410,6 +417,7 @@ onMounted(() => {
     obtenerDatoDePerfil(perfilId);
     agregarComponente(perfilId);
     obtenerComponentesPorPerfilId(perfilId);
+    // obtenerComponentesAsignados(perfilId);
   }
 });
 
@@ -472,31 +480,38 @@ const eliminarComponente = (nombreComponente: string) => {
   menuAbierto.value = null; // Cierra el menú después de eliminar
 };
 
-const toggleComponentes = async () => {
-  mostrarComponentesDisponibles.value = !mostrarComponentesDisponibles.value;
+// const toggleComponentes = async () => {
+//   mostrarComponentesDisponibles.value = !mostrarComponentesDisponibles.value;
 
-  console.log("CCCCCC",mostrarComponentesDisponibles.value)
-  // Solo mostrar en consola si se está abriendo el dropdown
-  if (mostrarComponentesDisponibles.value) {
-    const perfilId = Number(route.params.perfilId);
-    await agregarComponente(perfilId); // Llama a la función para obtener los componentes no seleccionados
-  }
-};
-// Método para actualizar componente
-const actualizarComponente = async (idComponent:number, perfilId: number, valor : number) => {
-  
-  
+//   console.log("CCCCCC",mostrarComponentesDisponibles.value)
+//   // Solo mostrar en consola si se está abriendo el dropdown
+//   if (mostrarComponentesDisponibles.value) {
+//     const perfilId = Number(route.params.perfilId);
+//     await agregarComponente(perfilId); // Llama a la función para obtener los componentes no seleccionados
+//   }
+// };
 
-  const idComp = 1;
-  
-  try {
-    await useApi.patch(`/api/v1/Perfiles-Componentes/${perfilId}/${idComp}/${valor}`);
-    console.log(`Componente ${valor} actualizado correctamente.`); // Mensaje en consola
-    // Puedes hacer una llamada a obtenerComponentesDisponibles para refrescar la lista si es necesario
-  } catch (error) {
-    console.error('Error al actualizar el componente:', error);
-  } finally {
-    mostrarComponentesDisponibles.value = false; // Cerrar el dropdown después de seleccionar
+const actualizarComponentes = async (componentesIds :number[], perfilId : number) => {
+  for (const idComp of componentesIds) {
+    try {
+      await useApi.patch(`/api/v1/Perfiles-Componentes/${perfilId}/${idComp}/${idComp}`);
+      console.log(`Componente ${idComp} actualizado correctamente.`);
+    } catch (error) {
+      console.error(`Error al actualizar el componente ${idComp}:`, error);
+    }
   }
+
+  // Opcional: Actualizar la lista de componentes asignados
+  // obtenerComponentesAsignados(perfilId); // Recargar componentes asignados desde el servidor si es necesario
 };
+
+
+// const obtenerComponentesAsignados = async (perfilId: number) => {
+//   try {
+//     const response = await useApi.get(`/api/v1/Perfiles-Componentes/${perfilId}`);
+//     componentesAsignados.value = response.data; // Actualiza la lista de componentes asignados
+//   } catch (error) {
+//     console.error('Error al obtener los componentes asignados:', error);
+//   }
+// };
 </script>
