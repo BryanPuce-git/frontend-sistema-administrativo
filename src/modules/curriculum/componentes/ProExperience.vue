@@ -23,7 +23,7 @@
                 <!-- Nombre del Cargo -->
                 <div class="mb-4">
                   <label for="cargo" class="block text-gray-700 text-sm font-bold mb-2">Nombre del cargo</label>
-                  <input v-model="cargo" type="text" id="cargo" placeholder="Ingresa el nombre del cargo"
+                  <input v-model="cargo" type="text" id="cargo" placeholder="Ingresa el nombre del cargo" required
                     class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
 
@@ -31,13 +31,13 @@
                 <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label for="experienceYearsDesde" class="block text-gray-700 text-sm font-bold mb-2">Desde</label>
-                    <input v-model="experienceYearsDesde" type="number" id="experienceYearsDesde"
+                    <input v-model="experienceYearsDesde" type="number" id="experienceYearsDesde" required
                       placeholder="Inserta el valor mínimo de años de experiencia requeridos"
                       class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
                     <label for="experienceYearsHasta" class="block text-gray-700 text-sm font-bold mb-2">Hasta</label>
-                    <input v-model="experienceYearsHasta" type="number" id="experienceYearsHasta"
+                    <input v-model="experienceYearsHasta" type="number" id="experienceYearsHasta" required
                       placeholder="Inserta el valor máximo de años de experiencia requeridos"
                       class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
@@ -48,7 +48,7 @@
                   <label for="department" class="block text-gray-700 text-sm font-bold mb-2">Áreas / Departamentos en
                     la
                     Empresa</label>
-                  <input v-model="department" type="text" id="department"
+                  <input v-model="department" type="text" id="department" required
                     placeholder="Selecciona el área o departamento"
                     class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
@@ -80,7 +80,7 @@
                   </p>
                   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <label class="inline-flex items-center">
-                      <input type="checkbox" v-model="excluyentesExperiencia" value="experiencia"
+                      <input type="checkbox" v-model="excluyentesExperiencia" value="experiencia" 
                         class="form-checkbox text-red-500">
                       <span class="ml-2">Experiencia</span>
                     </label>
@@ -98,10 +98,10 @@ import AreaLaboralModal from '@/modules/curriculum/componentes/AreaLaboralModal.
 import InstitucionLaboral from '../componentes/InstitucionLaboral.vue';
 
 const professionalExperienceActive = ref(false);
-const cargo = ref(null);
-const experienceYearsDesde = ref(null);
-const experienceYearsHasta = ref(null);
-const department = ref(null);
+const cargo = ref("");
+const experienceYearsDesde = ref("");
+const experienceYearsHasta = ref("");
+const department = ref("");
 const excluyentesExperiencia = ref([]);
 
 const mostrarDetalleExperiencia = ref(false);
