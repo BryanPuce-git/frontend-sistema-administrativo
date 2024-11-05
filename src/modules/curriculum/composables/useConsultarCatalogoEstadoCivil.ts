@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/vue-query';
-import { useApi } from '@/composables/use-api'; // Importa tu cliente API
+import { useApi } from '@/composables/use-api'; 
 import Swal from 'sweetalert2';
 import type { AxiosError } from 'axios';
-import type { ServerError } from '@/modules/perfiles/dto/serverError.dto';
+import type { ServerError } from '../dto/serverError.dto';
 import type { ItemCatalogoResponse } from '../dto/ItemCatalogoResponse.dto';
 
 
