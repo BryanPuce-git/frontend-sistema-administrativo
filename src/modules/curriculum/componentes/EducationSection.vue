@@ -42,7 +42,7 @@
                     <select v-model="estadoEstudios" id="estado-estudios"
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" disabled selected>Seleccione</option>
-                        <option v-for="item in estadoEstudiosgitOptions" :key="item['Id']"
+                        <option v-for="item in estadoEstudiosOptions" :key="item['Id']"
                             :value="item['Item Código']">
                             {{ item['Item Nombre'] }}
                         </option>
