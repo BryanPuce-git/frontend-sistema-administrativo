@@ -26,7 +26,7 @@
                 <!-- Salario Desde -->
                 <div>
                     <label for="salario-desde" class="block text-gray-700 text-sm font-bold mb-2">Desde</label>
-                    <input v-model="salarioDesde" type="number" id="salario-desde"
+                    <input v-model="salarioDesde" type="number" id="salario-desde" required
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Inserta valor mínimo" />
                 </div>
@@ -34,7 +34,7 @@
                 <!-- Salario Hasta -->
                 <div>
                     <label for="salario-hasta" class="block text-gray-700 text-sm font-bold mb-2">Hasta</label>
-                    <input v-model="salarioHasta" type="number" id="salario-hasta"
+                    <input v-model="salarioHasta" type="number" id="salario-hasta" required
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Inserta valor máximo" />
                 </div>
@@ -42,12 +42,12 @@
                 <!-- Beneficios -->
                 <div>
                     <label for="beneficios" class="block text-gray-700 text-sm font-bold mb-2">Beneficios</label>
-                    <select v-model="beneficios" id="beneficios"
+                    <select v-model="beneficios" id="beneficios" required
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" disabled selected>Seleccione</option>
-                        <option value="beneficio1">Beneficio 1</option>
-                        <option value="beneficio2">Beneficio 2</option>
-                        <option value="beneficio3">Beneficio 3</option>
+                        <option v-for="item in monedaOptions" :key="item['Id']" :value="item['Item Código']">
+                            {{ item['Item Nombre'] }} 
+                        </option>
                     </select>
                 </div>
             </div>
@@ -70,14 +70,34 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogoEstadoCivil';
+
 const salaryActive = ref(false);
-const salarioDesde = ref(null);
-const salarioHasta = ref(null);
-const beneficios = ref(null);
+const salarioDesde = ref("");
+const salarioHasta = ref("");
+const beneficios = ref("");
 const mostrarDetalle = ref(false);
+const codigoCatalogoMoneda = 'MONED';
+const monedaOptions = ref([]);
 
 const toggleDetalle = () => {
     mostrarDetalle.value = !mostrarDetalle.value;
 };
+
+const consultarcatalogo = useConsultarCatalogo();
+
+const fetchMonedaOptions = async () => {
+    try {
+        const response = await consultarcatalogo.mutateAsync(codigoCatalogoMoneda);
+        monedaOptions.value = response; // Asignar los datos recibidos a la referencia
+        console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
+    } catch (error) {
+        console.error("Error al consultar el catálogo de reubicación:", error);
+    }
+};
+
+onMounted(()=>{
+    fetchMonedaOptions();
+})
 </script>
