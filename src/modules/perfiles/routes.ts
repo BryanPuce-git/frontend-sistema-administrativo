@@ -31,6 +31,30 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('./pages/PerfilSummary.vue'),
     meta: { requiresAuth: true }, 
   },
+  // {
+  //   path: '/perfil-settings/:perfilId',
+  //   name: 'PerfilSettings',
+  //   component: () => import('./pages/PerfilSettings.vue'),
+  //   beforeEnter: async (to, from, next) => {
+  //     const perfilStore = usePerfilStore();
+  //     const consultarPerfil = useConsultarPerfil();
+      
+  //     const perfilId = Number(to.params.perfilId);
+
+  //     try {
+  //       // Cargar datos de perfil
+  //       await consultarPerfil.mutateAsync({ perfilId });
+  //       await perfilStore.obtenerComponentesPorPerfilId(perfilId);
+  //       await perfilStore.agregarComponente(perfilId);
+
+  //       // Después de cargar todo, permite la navegación
+  //       next();
+  //     } catch (error) {
+  //       console.error('Error al cargar el perfil:', error);
+  //       next(false); // Evita navegación si hay un error
+  //     }
+  //   },
+  // },
 ];
 
 export default routes;

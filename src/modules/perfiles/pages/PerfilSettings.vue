@@ -7,11 +7,11 @@
         <h1 class="text-xl font-semibold">Edición del perfil - {{ nombreRecibido }}</h1>
 
         <!-- Lista de Componentes ya asignados -->
-        <ul class="list-disc ml-3 mt-1">
+        <!-- <ul class="list-disc ml-3 mt-1">
           <li v-for="componente in componentesAsignados" :key="componente.id_componente" class="text-gray-600">
             {{ componente.no_componente }}
           </li>
-        </ul>
+        </ul> -->
 
         <!-- Botón para agregar componentes con un ícono SVG de "+" -->
         <button @click="mostrarComponentesDisponibles = !mostrarComponentesDisponibles"

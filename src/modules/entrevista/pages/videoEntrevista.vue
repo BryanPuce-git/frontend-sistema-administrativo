@@ -146,10 +146,14 @@
 import { ref, computed } from 'vue';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { useRouter } from 'vue-router';
+import { usePerfilId } from '@/stores/use-perfil-Id.store';
+
 
 const router = useRouter();
 const goBack = () => {
-  router.replace({ name: 'perfil-settings' });
+  const perfilId = usePerfilId();
+  const Id = perfilId.idPerfil;
+   router.push(`/perfil-settings/${Id}`);
 };
 
 // Estado para mostrar u ocultar el Drawer

@@ -8,10 +8,11 @@
           <div class="flex justify-between items-center p-4 border-b border-gray-200">
             <div class="flex items-center space-x-2">
               <button @click="goBack" class="mr-2 text-gray-600 hover:text-gray-900">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                  stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
               <h1 class="text-xl font-semibold text-gray-800">Configura el match perfecto de Currículum</h1>
             </div>
             <button class="text-blue-600 hover:text-blue-800 font-semibold hidden">
@@ -111,7 +112,7 @@ import LanguageSection from '../componentes/LanguageSection.vue';
 import SkillsKnowledge from '../componentes/SkillsKnowledge.vue';
 import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
-
+import { usePerfilId } from '@/stores/use-perfil-Id.store';
 
 // Save Button
 
@@ -134,7 +135,9 @@ const handleSave = (settings) => {
 
 
 const goBack = () => {
-    router.push({ name: 'perfil-settings' });
+  const perfilId = usePerfilId();
+  const Id = perfilId.idPerfil;
+  router.push(`/perfil-settings/${Id}`);
 };
 
 </script>

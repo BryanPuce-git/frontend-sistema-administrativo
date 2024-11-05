@@ -315,6 +315,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { usePerfilStore } from '@/stores/use-perfil.store';
+import { usePerfilId } from '@/stores/use-perfil-Id.store';
 import Swal from 'sweetalert2';
 import { useGuardarPerfil } from '@/modules/perfiles/composables/customDataTableAgregarPerfilesModal';
 import { useApi } from '@/composables/use-api';
@@ -331,8 +332,13 @@ onMounted(async () => {
     cargarComponentes(); // Llama a la función al montar el componente
 });
 
-const irAPerfilSettings = (perfilId: number) => {
-    router.push(`/perfil-settings/${perfilId}`);
+
+
+const irAPerfilSettings = (Id: number) => {
+    const perfilId = usePerfilId();
+    perfilId.setPerfil(Id);
+    router.push(`/perfil-settings/${Id}`);
+    console.log('Id del perfil guardado', Id)
 };
 
 const router = useRouter();
@@ -345,6 +351,7 @@ const nivel = ref('');
 const opciones = ref<string[]>([]);
 const mensajeError = ref('');
 const perfilStore = usePerfilStore();
+
 const perfiles = ref<PerfilComponenteResponse[]>([]);
 
 
@@ -365,6 +372,7 @@ const componentes = ref<ItemCatalogo[]>([]);
 //Guardando en el store
 perfilStore.setPerfil(nombre.value, nivel.value, opciones.value);
 console.log("Opciones en el store", opciones.value)
+
 
 
 
@@ -649,7 +657,7 @@ const guardarEdicion = async () => {
             // Llama a la API para actualizar el componente
             await useApi.patch(`/api/v1/Perfiles-Componentes/${idPerfil.value}/${idComp}/${valor}`);
         }
- 
+
         Swal.fire({
             icon: 'success',
             title: 'Perfil Actualizado',

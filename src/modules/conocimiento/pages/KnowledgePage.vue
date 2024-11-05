@@ -81,10 +81,12 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
-
+import { usePerfilId } from '@/stores/use-perfil-Id.store';
 const router = useRouter();
 const goBack = () => {
-  router.push({ name: 'perfil-settings' });
+  const perfilId = usePerfilId();
+  const Id = perfilId.idPerfil;
+   router.push(`/perfil-settings/${Id}`);
 };
 
 const questionarios = ref([
