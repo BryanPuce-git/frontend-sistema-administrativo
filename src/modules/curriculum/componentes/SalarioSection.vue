@@ -71,7 +71,7 @@
 </template>
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogoEstadoCivil';
+import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
 
 const salaryActive = ref(false);
 const salarioDesde = ref("");

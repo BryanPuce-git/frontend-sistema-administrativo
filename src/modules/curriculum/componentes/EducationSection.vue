@@ -29,10 +29,9 @@
                     <select v-model="nivelEstudios" id="nivel-estudios"
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" disabled selected>Seleccione</option>
-                        <option value="secundario">Secundario</option>
-                        <option value="tecnico">Técnico</option>
-                        <option value="universitario">Universitario</option>
-                        <option value="postgrado">Postgrado</option>
+                        <option v-for="item in nivelEstudiosOptions" :key="item['Id']" :value="item['Item Código']">
+                            {{ item['Item Nombre'] }}
+                        </option>
                     </select>
                 </div>
 
@@ -43,9 +42,10 @@
                     <select v-model="estadoEstudios" id="estado-estudios"
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" disabled selected>Seleccione</option>
-                        <option value="en-curso">En curso</option>
-                        <option value="terminado">Terminado</option>
-                        <option value="incompleto">Incompleto</option>
+                        <option v-for="item in estadoEstudiosgitOptions" :key="item['Id']"
+                            :value="item['Item Código']">
+                            {{ item['Item Nombre'] }}
+                        </option>
                     </select>
                 </div>
 
@@ -92,19 +92,51 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import AreaEstudioModal from '@/modules/curriculum/componentes/AreaEstudioModal.vue';
+import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
 
 const educationActive = ref(false);
-const nivelEstudios = ref(null);
-const estadoEstudios = ref(null);
-const institucionEducativa = ref(null);
+const nivelEstudios = ref("");
+const estadoEstudios = ref("");
+const institucionEducativa = ref("");
 const excluyentes = ref([]);
 const mostrarDetalleEducacion = ref(false);
-
 
 const mostrarMasEducacion = () => {
     mostrarDetalleEducacion.value = !mostrarDetalleEducacion.value;
 };
+
+const codigoCatalogoNivelEstudios = 'NIVEL-EST';
+const codigoCatalogoEstadoEstudios = 'ESTA-ESTU';
+const nivelEstudiosOptions = ref([]);
+const estadoEstudiosOptions = ref([]);
+
+const consultarcatalogo = useConsultarCatalogo();
+
+const fetchNivelEstudiosOptions = async () => {
+    try {
+        const response = await consultarcatalogo.mutateAsync(codigoCatalogoNivelEstudios);
+        nivelEstudiosOptions.value = response; // Asignar los datos recibidos a la referencia
+        console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
+    } catch (error) {
+        console.error("Error al consultar el catálogo de reubicación:", error);
+    }
+};
+
+const fetchEstadoEstudiosOptions = async () => {
+    try {
+        const response = await consultarcatalogo.mutateAsync(codigoCatalogoEstadoEstudios);
+        estadoEstudiosOptions.value = response; // Asignar los datos recibidos a la referencia
+        console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
+    } catch (error) {
+        console.error("Error al consultar el catálogo de reubicación:", error);
+    }
+};
+
+onMounted(() => {
+    fetchNivelEstudiosOptions();
+    fetchEstadoEstudiosOptions();
+})
 </script>

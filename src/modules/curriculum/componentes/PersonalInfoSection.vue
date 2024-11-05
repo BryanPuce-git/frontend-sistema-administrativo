@@ -147,7 +147,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogoEstadoCivil';
+import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
 
 
 // Estado para manejar qué sección está activa
