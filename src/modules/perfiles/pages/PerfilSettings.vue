@@ -270,7 +270,8 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted  } from 'vue';
+import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
@@ -357,20 +358,42 @@ const asignarComponente = (componente : Componente) => {
 
 
 
-
+const curriculumId = ref<number | null>(null);
+const conocimientoId = ref<number | null>(null);
+const videoEntrevistaId = ref<number | null>(null);
+const discId = ref<number | null>(null);
+const competenciasId = ref<number | null>(null);
 
 
 
 // Función para obtener los componentes por ID de perfil
-const obtenerComponentesPorPerfilId = async (perfilId: number) => {
+const obtenerComponentesPorPerfilId = async (perfilId : number) => {
   try {
     const response = await useApi.get(`/api/v1/Perfiles-Componentes/Componentes/${perfilId}`);
+    console.log('Respuesta de componentes:', response.data);
 
-    console.log('Respuesta de componentes:', response.data); // Agrega esta línea
     if (Array.isArray(response.data) && response.data.length > 0) {
       componentesAsignados.value = response.data;
-      console.log('Componentes Asignados en el ARRAY:', componentesAsignados.value); // Para depuración
-      verificarComponentes(["CONOCIMIENTO", "VIDEO ENTREVISTA", "DISC", "CURRICULUM", "COMPETENCIAS"]);
+
+      // Asignar los IDs de cada componente si están presentes en la respuesta
+      const asignarIdComponente = (nombre: string, refId: Ref<number | null>) => {
+        const componente = componentesAsignados.value.find((c) => c.no_componente === nombre);
+        refId.value = componente ? componente.pcom_id : null;
+      };
+
+      asignarIdComponente("CURRICULUM", curriculumId);
+      asignarIdComponente("CONOCIMIENTO", conocimientoId);
+      asignarIdComponente("VIDEO ENTREVISTA", videoEntrevistaId);
+      asignarIdComponente("DISC", discId);
+      asignarIdComponente("COMPETENCIAS", competenciasId);
+
+      console.log('IDs de componentes:', {
+        curriculumId: curriculumId.value,
+        conocimientoId: conocimientoId.value,
+        videoEntrevistaId: videoEntrevistaId.value,
+        discId: discId.value,
+        competenciasId: competenciasId.value,
+      });
 
     } else {
       console.warn('No hay componentes asignados para este perfil.');
@@ -395,17 +418,17 @@ const tieneComponente = (nombreComponente: string) => {
 };
 
 // Ejemplo de uso para verificar varios componentes
-const verificarComponentes = (componentesABuscar: string[]) => {
-  componentesABuscar.forEach((nombreComponente) => {
-    const existe = tieneComponente(nombreComponente);
-    if (existe) {
-      // console.log(`El componente ${nombreComponente} está habilitado.`);
-      // Aquí puedes habilitar el componente en tu estado
-    } else {
-      // console.log(`El componente ${nombreComponente} no existe.`);
-    }
-  });
-};
+// const verificarComponentes = (componentesABuscar: string[]) => {
+//   componentesABuscar.forEach((nombreComponente) => {
+//     const existe = tieneComponente(nombreComponente);
+//     if (existe) {
+//       // console.log(`El componente ${nombreComponente} está habilitado.`);
+//       // Aquí puedes habilitar el componente en tu estado
+//     } else {
+//       // console.log(`El componente ${nombreComponente} no existe.`);
+//     }
+//   });
+// };
 
 
 
@@ -422,21 +445,6 @@ onMounted(() => {
 });
 
 
-const irACurriculum = () => {
-  router.replace('/curriculum');
-};
-
-const irAKnowledge = () => {
-  router.replace('/conocimiento');
-};
-
-const irACompetencia = () => {
-  router.replace('/competencia');
-};
-
-const irAEntrevista = () => {
-  router.replace('/videoEntrevista');
-};
 
 const irAPerfiles = () => {
   router.replace('/perfiles');
@@ -446,6 +454,45 @@ const irAProceso = () => {
 }
 
 
+const irACurriculum = () => {
+  if (curriculumId.value) {
+    router.push({ name: '/curriculum', params: { id: curriculumId.value } });
+  } else {
+    console.warn('ID del componente "CURRICULUM" no disponible.');
+  }
+};
+
+const irAKnowledge = () => {
+  if (conocimientoId.value) {
+    router.push({ name: '/conocimiento', params: { id: conocimientoId.value } });
+  } else {
+    console.warn('ID del componente "CONOCIMIENTO" no disponible.');
+  }
+};
+
+const irAEntrevista = () => {
+  if (videoEntrevistaId.value) {
+    router.push({ name: '/entrevista', params: { id: videoEntrevistaId.value } });
+  } else {
+    console.warn('ID del componente "VIDEO ENTREVISTA" no disponible.');
+  }
+};
+
+const irACompetencia = () => {
+  if (competenciasId.value) {
+    router.push({ name: '/competencias', params: { id: competenciasId.value } });
+  } else {
+    console.warn('ID del componente "COMPETENCIAS" no disponible.');
+  }
+};
+
+// const irADisc = () => {
+//   if (discId.value) {
+//     router.push({ name: 'Disc', params: { id: discId.value } });
+//   } else {
+//     console.warn('ID del componente "DISC" no disponible.');
+//   }
+// };
 
 // Computed para la sumatoria de los pesos
 const sumatoriaPesos = computed(() => {

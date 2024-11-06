@@ -39,7 +39,7 @@
                 <div>
                     <label for="genero" class="block text-gray-700 text-sm font-bold mb-2">Selecciona el género
                         requerido</label>
-                    <select id="genero" required v-model="genero" 
+                    <select id="genero" required v-model="genero"
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
 
                         <option value="" disabled selected>Seleccione</option>
@@ -54,9 +54,13 @@
                     <label for="ciudades" class="block text-gray-700 text-sm font-bold mb-2">Selecciona la(s) ciudad(es)
                         donde
                         dispones del cargo</label>
-                    <input type="text" id="ciudades" v-model="ciudades" required
-                        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ciudad(es)" />
+                    <select id="cuidades" v-model="ciudades" required
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" disabled selected>Seleccione</option>
+                        <option v-for="item in ciudadesOptions" :key="item['Id']" :value="item['Item Código']">
+                            {{ item['Item Nombre'] }} 
+                        </option>
+                    </select>
                 </div>
 
                 <!-- Estado civil -->
@@ -72,7 +76,7 @@
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" disabled selected>Seleccione</option>
                         <option v-for="item in estadoCivilOptions" :key="item['Id']" :value="item['Item Código']">
-                            {{ item['Item Nombre'] }} <!-- Cambié esto para usar Item Nombre -->
+                            {{ item['Item Nombre'] }} 
                         </option>
                     </select>
                 </div>
@@ -108,34 +112,34 @@
             <!-- Campos Excluyentes -->
             <div class="bg-red-100 border border-red-300 p-4 rounded-lg mb-6">
                 <h4 class="text-red-500 font-bold mb-2">Campos Excluyentes</h4>
-                <p class="text-sm text-red-500 mb-4">Advertencia: selecciona los campos que son indispensables para el
+                <p class="text-sm text-black-500 mb-4"><b>Advertencia: </b>selecciona los campos que son indispensables para el
                     perfil. Ten en
                     cuenta que si un candidato no cumple con un campo excluyente será descartado del proceso.</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <label class="inline-flex items-center">
-                        <input type="checkbox" v-model="excluyentes" value="edad" class="form-checkbox text-red-500">
+                        <input type="checkbox" v-model="excluyentesDesdeHasta" value="edad" class="form-checkbox text-red-500">
                         <span class="ml-2">Edad</span>
                     </label>
                     <label class="inline-flex items-center">
-                        <input type="checkbox" v-model="excluyentes" value="genero" class="form-checkbox text-red-500">
+                        <input type="checkbox" v-model="excluyentesGenero" value="genero" class="form-checkbox text-red-500">
                         <span class="ml-2">Género</span>
                     </label>
                     <label class="inline-flex items-center">
-                        <input type="checkbox" v-model="excluyentes" value="estadoCivil"
+                        <input type="checkbox" v-model="excluyentesEstadoCivil" value="estadoCivil"
                             class="form-checkbox text-red-500">
                         <span class="ml-2">Estado civil</span>
                     </label>
                     <label class="inline-flex items-center">
-                        <input type="checkbox" v-model="excluyentes" value="reubicacion"
+                        <input type="checkbox" v-model="excluyentesReubicacion" value="reubicacion"
                             class="form-checkbox text-red-500">
                         <span class="ml-2">Capacidad de reubicación</span>
                     </label>
                     <label class="inline-flex items-center">
-                        <input type="checkbox" v-model="excluyentes" value="ciudad" class="form-checkbox text-red-500">
+                        <input type="checkbox" v-model="excluyentesCiudad" value="ciudad" class="form-checkbox text-red-500">
                         <span class="ml-2">Ciudad</span>
                     </label>
                     <label class="inline-flex items-center">
-                        <input type="checkbox" v-model="excluyentes" value="discapacidad"
+                        <input type="checkbox" v-model="excluyentesDiscapacidad" value="discapacidad"
                             class="form-checkbox text-red-500">
                         <span class="ml-2">Candidato con discapacidad</span>
                     </label>
@@ -148,8 +152,12 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
+import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 
+const curriculumId = route.params.id;
 // Estado para manejar qué sección está activa
 const personalInfoActive = ref(false);
 
@@ -161,15 +169,22 @@ const ciudades = ref("");
 const estadoCivil = ref("");
 const reubicacion = ref("");
 const discapacidad = ref("");
-const excluyentes = ref([]);
+const excluyentesDesdeHasta = ref(false);
+const excluyentesEstadoCivil = ref(false);
+const excluyentesGenero = ref(false);
+const excluyentesCiudad = ref(false);
+const excluyentesReubicacion = ref(false);
+const excluyentesDiscapacidad = ref(false);
 const codigoCatalogoEstadoCivil = 'EST-CI';
 const codigoCatalogoGenero = 'GEN';
 const codigoCatalogoReubicacion = 'CAP-REU';
 const codigoCatalogoDiscapacidad = 'DISCAP';
+const codigoCatalogoCuidades = 'CIUD';
 const estadoCivilOptions = ref([]);
 const generoOptions = ref([]);
 const reubicacionOptions = ref([]);
 const discapacidadOptions = ref([]);
+const ciudadesOptions = ref([]);
 
 
 const consultarcatalogo = useConsultarCatalogo();
@@ -177,8 +192,8 @@ const consultarcatalogo = useConsultarCatalogo();
 const fetchEstadoCivilOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoEstadoCivil);
-        estadoCivilOptions.value = response; // Asignar los datos recibidos a la referencia
-        console.log("Datos recibidos del estado civil:", response); // Verificar la estructura de los datos
+        estadoCivilOptions.value = response; 
+        console.log("Datos recibidos del estado civil:", response); 
     } catch (error) {
         console.error("Error al consultar el catálogo de estado civil:", error);
     }
@@ -187,8 +202,8 @@ const fetchEstadoCivilOptions = async () => {
 const fetchGeneroOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoGenero);
-        generoOptions.value = response; // Asignar los datos recibidos a la referencia
-        console.log("Datos recibidos del género:", response); // Verificar la estructura de los datos
+        generoOptions.value = response; 
+        console.log("Datos recibidos del género:", response); 
     } catch (error) {
         console.error("Error al consultar el catálogo de género:", error);
     }
@@ -197,8 +212,8 @@ const fetchGeneroOptions = async () => {
 const fetchReubicacionOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoReubicacion);
-        reubicacionOptions.value = response; // Asignar los datos recibidos a la referencia
-        console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
+        reubicacionOptions.value = response; 
+        console.log("Datos recibidos del reubicación:", response); 
     } catch (error) {
         console.error("Error al consultar el catálogo de reubicación:", error);
     }
@@ -207,18 +222,95 @@ const fetchReubicacionOptions = async () => {
 const fetchDiscapacidadOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoDiscapacidad);
-        discapacidadOptions.value = response; // Asignar los datos recibidos a la referencia
-        console.log("Datos recibidos del discapacidad", response); // Verificar la estructura de los datos
+        discapacidadOptions.value = response; 
+        console.log("Datos recibidos del discapacidad", response); 
     } catch (error) {
         console.error("Error al consultar el catálogo de discapacidad", error);
     }
 };
-// Ejecuta la función cuando el componente se monta
+
+const fetchCiudadesOptions = async () => {
+    try {
+        const response = await consultarcatalogo.mutateAsync(codigoCatalogoCuidades);
+        ciudadesOptions.value = response; 
+        console.log("Datos recibidos del cuidades", response); 
+    } catch (error) {
+        console.error("Error al consultar el catálogo de cuidades", error);
+    }
+}; 
+
+const validarCamposExcluyentes = () => {
+    mensajeError.value = ""; // Reinicia el mensaje de error
+    if (excluyentesDesdeHasta.value && (!edadDesde.value || !edadHasta.value)) {
+        mensajeError.value = "Por favor, complete ambos campos de edad, ya que son excluyentes.";
+        return false;
+    }
+    if (excluyentesGenero.value && !genero.value) {
+        mensajeError.value = "Por favor, seleccione un género, ya que es un campo excluyente.";
+        return false;
+    }
+    if (excluyentesEstadoCivil.value && !estadoCivil.value) {
+        mensajeError.value = "Por favor, seleccione un estado civil, ya que es un campo excluyente.";
+        return false;
+    }
+    if (excluyentesReubicacion.value && !reubicacion.value) {
+        mensajeError.value = "Por favor, seleccione una capacidad de reubicación, ya que es un campo excluyente.";
+        return false;
+    }
+    if (excluyentesCiudad.value && !ciudades.value) {
+        mensajeError.value = "Por favor, seleccione una ciudad, ya que es un campo excluyente.";
+        return false;
+    }
+    if (excluyentesDiscapacidad.value && !discapacidad.value) {
+        mensajeError.value = "Por favor, seleccione una opción para candidatos con discapacidad, ya que es un campo excluyente.";
+        return false;
+    }
+    return true;
+};
+
+const guardarInfoPersonalMutation = useGuardarInfoPersonal();
+
+const guardarInformacionPersonal = async () => {
+    if (!validarCamposExcluyentes()) {
+        return; // Si falla la validación, no continuar
+    }
+
+    // Formatea los datos para el endpoint
+    const data = {
+        pcom_id: 1, 
+        inf_edad_desde: edadDesde.value || null,
+        inf_edad_hasta: edadHasta.value || null,
+        inf_genero: genero.value || null,
+        inf_estado_civil: estadoCivil.value || null,
+        inf_ciudad_cargo: ciudades.value || null,
+        inf_capacidad_reubicacion: reubicacion.value || null,
+        inf_candidatos_discapacidad: discapacidad.value || null,
+        inf_edad_excluyente: excluyentesDesdeHasta.value ? 1 : 0,
+        inf_estado_civil_excluyente: excluyentesEstadoCivil.value ? 1 : 0,
+        inf_genero_excluyente: excluyentesGenero.value ? 1 : 0,
+        inf_capacidad_reubicacion_excluyente: excluyentesReubicacion.value ? 1 : 0,
+        inf_candidatos_discapacidad_excluyente: excluyentesDiscapacidad.value ? 1 : 0,
+        inf_ciudad_cargo_excluyente: excluyentesCiudad.value ? 1 : 0
+    };
+
+    try {
+        await guardarInfoPersonalMutation.mutateAsync(data);
+        console.log("Información personal guardada correctamente");
+
+    } catch (error) {
+        console.error("Error al guardar la información personal:", error);
+        mensajeError.value = "Hubo un error al guardar la información. Intente nuevamente.";
+    }
+};
+
+
 onMounted(() => {
     fetchEstadoCivilOptions();
     fetchGeneroOptions();
     fetchReubicacionOptions();
     fetchDiscapacidadOptions();
+    fetchCiudadesOptions();
+    console.log("ID del currículum recibido:", curriculumId);
 });
 
 </script>
