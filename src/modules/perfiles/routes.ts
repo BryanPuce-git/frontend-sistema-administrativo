@@ -31,33 +31,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('./pages/PerfilSummary.vue'),
     meta: { requiresAuth: true }, 
   },
-  {
-    path: '/curriculum/:id',
-    name: 'curriculum',
-    component: () => import("@/modules/curriculum/componentes/PersonalInfoSection.vue") // Asegúrate de tener este componente
-  },
-  // {
-  //   path: '/conocimiento/:id',
-  //   name: 'Conocimiento',
-  //   component: () => import('@/views/Conocimiento.vue')  // Asegúrate de tener este componente
-  // },
-  // {
-  //   path: '/video-entrevista/:id',
-  //   name: 'VideoEntrevista',
-  //   component: () => import('@/views/VideoEntrevista.vue')  // Asegúrate de tener este componente
-  // },
-  // {
-  //   path: '/disc/:id',
-  //   name: 'Disc',
-  //   component: () => import('@/views/Disc.vue')  // Asegúrate de tener este componente
-  // },
-  // {
-  //   path: '/competencias/:id',
-  //   name: 'Competencias',
-  //   component: () => import('@/views/Competencias.vue')  // Asegúrate de tener este componente
-  // }
-
-
+  
 
 
 

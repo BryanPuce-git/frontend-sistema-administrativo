@@ -119,9 +119,9 @@ const fetchNivelEstudiosOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoNivelEstudios);
         nivelEstudiosOptions.value = response; // Asignar los datos recibidos a la referencia
-        console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
+        // console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
     } catch (error) {
-        console.error("Error al consultar el catálogo de reubicación:", error);
+        // console.error("Error al consultar el catálogo de reubicación:", error);
     }
 };
 
@@ -129,9 +129,9 @@ const fetchEstadoEstudiosOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoEstadoEstudios);
         estadoEstudiosOptions.value = response; // Asignar los datos recibidos a la referencia
-        console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
+        // console.log("Datos recibidos del reubicación:", response); // Verificar la estructura de los datos
     } catch (error) {
-        console.error("Error al consultar el catálogo de reubicación:", error);
+        // console.error("Error al consultar el catálogo de reubicación:", error);
     }
 };
 

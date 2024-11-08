@@ -39,11 +39,11 @@
                 <div>
                     <label for="genero" class="block text-gray-700 text-sm font-bold mb-2">Selecciona el género
                         requerido</label>
-                    <select id="genero" required v-model="genero"
+                    <select id="genero" required v-model="generoId"
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
 
                         <option value="" disabled selected>Seleccione</option>
-                        <option v-for="item in generoOptions" :key="item['Id']" :value="item['Item Código']">
+                        <option v-for="item in generoOptions" :key="item['Id']" :value="item['Id']">
                             {{ item['Item Nombre'] }} <!-- Cambié esto para usar Item Nombre -->
                         </option>
                     </select>
@@ -147,24 +147,34 @@
             </div>
         </div>
     </div>
+    <button @click="guardarInformacionPersonal" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2" type="button">
+          Guardar
+        </button>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
-import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
-import { useRoute } from 'vue-router';
+import { defineProps, defineEmits  } from 'vue';
 
-const route = useRoute();
 
-const curriculumId = route.params.id;
-// Estado para manejar qué sección está activa
+
+const props = defineProps({
+  id: {
+    type: Number,
+    required: true,
+  },
+});
+
+const emit = defineEmits(['savePersonalInfo']);
+
 const personalInfoActive = ref(false);
 
-// Estados del formulario de Información Personal
+
 const edadDesde = ref("");
 const edadHasta = ref("");
-const genero = ref("");
+const generoId = ref("");
+const generoNombre = ref("");
 const ciudades = ref("");
 const estadoCivil = ref("");
 const reubicacion = ref("");
@@ -186,6 +196,15 @@ const reubicacionOptions = ref([]);
 const discapacidadOptions = ref([]);
 const ciudadesOptions = ref([]);
 
+watch(generoId, (newId) => {
+  // Buscar el nombre del género por el id
+  const selectedGenero = generoOptions.value.find(item => item.Id === newId);
+  if (selectedGenero) {
+    generoNombre.value = selectedGenero['Item Nombre']; // Guardar el nombre correspondiente
+  } else {
+    generoNombre.value = ""; // Si no se encuentra el id, borrar el nombre
+  }
+});
 
 const consultarcatalogo = useConsultarCatalogo();
 
@@ -193,9 +212,9 @@ const fetchEstadoCivilOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoEstadoCivil);
         estadoCivilOptions.value = response; 
-        console.log("Datos recibidos del estado civil:", response); 
+        // console.log("Datos recibidos del estado civil:", response); 
     } catch (error) {
-        console.error("Error al consultar el catálogo de estado civil:", error);
+        // console.error("Error al consultar el catálogo de estado civil:", error);
     }
 };
 
@@ -203,9 +222,9 @@ const fetchGeneroOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoGenero);
         generoOptions.value = response; 
-        console.log("Datos recibidos del género:", response); 
+        // console.log("Datos recibidos del género:", response); 
     } catch (error) {
-        console.error("Error al consultar el catálogo de género:", error);
+        // console.error("Error al consultar el catálogo de género:", error);
     }
 };
 
@@ -213,9 +232,9 @@ const fetchReubicacionOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoReubicacion);
         reubicacionOptions.value = response; 
-        console.log("Datos recibidos del reubicación:", response); 
+        // console.log("Datos recibidos del reubicación:", response); 
     } catch (error) {
-        console.error("Error al consultar el catálogo de reubicación:", error);
+        // console.error("Error al consultar el catálogo de reubicación:", error);
     }
 };
 
@@ -223,9 +242,9 @@ const fetchDiscapacidadOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoDiscapacidad);
         discapacidadOptions.value = response; 
-        console.log("Datos recibidos del discapacidad", response); 
+        // console.log("Datos recibidos del discapacidad", response); 
     } catch (error) {
-        console.error("Error al consultar el catálogo de discapacidad", error);
+        // console.error("Error al consultar el catálogo de discapacidad", error);
     }
 };
 
@@ -233,9 +252,9 @@ const fetchCiudadesOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoCuidades);
         ciudadesOptions.value = response; 
-        console.log("Datos recibidos del cuidades", response); 
+        // console.log("Datos recibidos del cuidades", response); 
     } catch (error) {
-        console.error("Error al consultar el catálogo de cuidades", error);
+        // console.error("Error al consultar el catálogo de cuidades", error);
     }
 }; 
 
@@ -268,19 +287,23 @@ const validarCamposExcluyentes = () => {
     return true;
 };
 
-const guardarInfoPersonalMutation = useGuardarInfoPersonal();
 
-const guardarInformacionPersonal = async () => {
-    if (!validarCamposExcluyentes()) {
-        return; // Si falla la validación, no continuar
-    }
 
-    // Formatea los datos para el endpoint
+const guardarInformacionPersonal = () => {
+    
+    console.log("Guardando información personal...");
+
+    // if (!validarCamposExcluyentes()) {
+    //     return; 
+    // }
+
+    // Crear los datos a emitir
     const data = {
-        pcom_id: 1, 
+        pcom_id: props.id,
         inf_edad_desde: edadDesde.value || null,
         inf_edad_hasta: edadHasta.value || null,
-        inf_genero: genero.value || null,
+        inf_genero: generoId.value || null,
+        genero: generoNombre.value || null,
         inf_estado_civil: estadoCivil.value || null,
         inf_ciudad_cargo: ciudades.value || null,
         inf_capacidad_reubicacion: reubicacion.value || null,
@@ -293,15 +316,12 @@ const guardarInformacionPersonal = async () => {
         inf_ciudad_cargo_excluyente: excluyentesCiudad.value ? 1 : 0
     };
 
-    try {
-        await guardarInfoPersonalMutation.mutateAsync(data);
-        console.log("Información personal guardada correctamente");
+    console.log("Datos de información personal", data); // Revisa si esto aparece en la consola
 
-    } catch (error) {
-        console.error("Error al guardar la información personal:", error);
-        mensajeError.value = "Hubo un error al guardar la información. Intente nuevamente.";
-    }
+    // Emitir los datos al componente principal (Curriculum)
+    emit('savePersonalInfo', data);
 };
+
 
 
 onMounted(() => {
@@ -310,7 +330,7 @@ onMounted(() => {
     fetchReubicacionOptions();
     fetchDiscapacidadOptions();
     fetchCiudadesOptions();
-    console.log("ID del currículum recibido:", curriculumId);
+    
 });
 
 </script>

@@ -277,7 +277,6 @@ import { useRoute } from 'vue-router';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { usePerfilStore } from '@/stores/use-perfil.store';
 import { useConsultarPerfil } from '@/modules/perfiles/composables/useConsultarPerfil';
-// import type { PerfilComponenteResponse } from '../dto/PerfilComponenteResponse.dto';
 import { useApi } from '@/composables/use-api';
 
 const perfilStore = usePerfilStore();
@@ -358,7 +357,7 @@ const asignarComponente = (componente : Componente) => {
 
 
 
-const curriculumId = ref<number | null>(null);
+const curriculumId = ref<number| null>(null);
 const conocimientoId = ref<number | null>(null);
 const videoEntrevistaId = ref<number | null>(null);
 const discId = ref<number | null>(null);
@@ -456,7 +455,7 @@ const irAProceso = () => {
 
 const irACurriculum = () => {
   if (curriculumId.value) {
-    router.push({ name: '/curriculum', params: { id: curriculumId.value } });
+    router.push({ name: 'curriculum', params: { id: curriculumId.value } });
   } else {
     console.warn('ID del componente "CURRICULUM" no disponible.');
   }

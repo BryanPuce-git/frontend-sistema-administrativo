@@ -53,38 +53,20 @@
 
         <div class="mx-auto bg-white rounded-lg p-6">
 
-          <!-- Información Personal -->
 
-          <PersonalInfoSection />
-
-          <!-- Salario -->
-
-          <SalarioSection />
-
-          <!-- Educación -->
-
-          <EducationSection />
-
-          <!-- Experiencia Profesional -->
-
-          <ProExperience />
-
-          <!-- Idiomas -->
-
-          <LanguageSection />
-
-          <!--  Habilidades / Conocimientos  -->
-
-          <SkillsKnowledge />
-
-          <!-- Preguntas Filtro -->
-
-          <FilterQuestionsSection />
+          <PersonalInfoSection :id="Number(pcom_id)" @savePersonalInfo="handlePersonalInfoSave" />
+          <SalarioSection @saveSalario="handleSalarioSave" />
+          <EducationSection @saveEducation="handleEducationSave" />
+          <ProExperience @saveProExperience="handleProExperienceSave" />
+          <LanguageSection @saveLanguages="handleLanguagesSave" />
+          <SkillsKnowledge @saveSkills="handleSkillsSave" />
+          <FilterQuestionsSection @saveFilters="handleFiltersSave" />
 
         </div>
       </div>
       <div class="flex justify-end  mb-5 mr-5">
-        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+        <button type="button" @click="openModal"
+          class="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
           Guardar
         </button>
       </div>
@@ -93,7 +75,7 @@
     </form>
 
     <!-- Modal de configuración avanzada -->
-    <AdvancedConfigModal :isOpen="isModalOpen" @close="closeModal" @save="handleSave" />
+    <AdvancedConfigModal :isOpen="isModalOpen" @close="handleCloseModal" @save="handleSaveCurriculum" />
 
   </DashboardLayout>
 </template>
@@ -101,6 +83,7 @@
 <script setup>
 
 import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { ref } from 'vue';
 
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
@@ -113,25 +96,39 @@ import SkillsKnowledge from '../componentes/SkillsKnowledge.vue';
 import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
+import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
 
-// Save Button
 
 const router = useRouter();
+const route = useRoute();
 const isModalOpen = ref(false);
+const personalInfoData = ref(null);
+const salarioData = ref(null);
+const educationData = ref(null);
+const proExperienceData = ref(null);
+const languageData = ref(null);
+const skillsData = ref(null);
+const filtersData = ref(null);
+
+
+
+const pcom_id = ref(route.params.id);
 
 const openModal = () => {
   isModalOpen.value = true;
 };
 
-const closeModal = () => {
+
+// const handleSave = (settings) => {
+//   console.log(settings);
+//   closeModal();
+//   router.push('/perfil-settings');
+// };
+
+const handleCloseModal = () => {
   isModalOpen.value = false;
 };
 
-const handleSave = (settings) => {
-  console.log(settings); // Manejar los settings si es necesario
-  closeModal();
-  router.push('/perfil-settings');
-};
 
 
 const goBack = () => {
@@ -140,4 +137,99 @@ const goBack = () => {
   router.push(`/perfil-settings/${Id}`);
 };
 
+
+const handlePersonalInfoSave = (data) => {
+  console.log("Datos recibidos de PersonalInfoSection:", data);
+  personalInfoData.value = data;  
+};
+
+
+const handleSalarioSave = (data) => {
+  salarioData.value = data;
+};
+
+const handleEducationSave = (data) => {
+  educationData.value = data;
+};
+
+const handleProExperienceSave = (data) => {
+  proExperienceData.value = data;
+};
+
+const handleLanguagesSave = (data) => {
+  languageData.value = data;
+};
+
+const handleSkillsSave = (data) => {
+  skillsData.value = data;
+};
+
+const handleFiltersSave = (data) => {
+  filtersData.value = data;
+};
+
+
+const guardarInfoPersonalMutation = useGuardarInfoPersonal();
+
+const handleSaveCurriculum = (settings) => {
+  
+  console.log("Datos de settings",settings);
+  if (!Array.isArray(settings)) {
+    console.error('Se esperaban los datos en formato array, pero se recibió:', settings);
+    return;
+  }
+
+  // Verificar si la suma de los porcentajes es 100
+  const totalPercentage = settings.reduce((acc, curr) => acc + (curr.value || 0), 0);
+
+  if (totalPercentage !== 100) {
+    console.error('La suma total de los porcentajes no es 100, es:', totalPercentage);
+    return;
+  }
+
+  // Si todo es correcto, hacer la acción de guardar los datos
+  console.log("Configuración de los porcentajes:", settings);
+  // Preparar todos los datos para enviarlos al backend
+  const data = {
+    personalInfo: personalInfoData.value,
+    salario: salarioData.value,
+    education: educationData.value,
+    proExperience: proExperienceData.value,
+    language: languageData.value,
+    skills: skillsData.value,
+    filters: filtersData.value,
+  };
+
+  console.log("Datos de información personal", personalInfoData.value);
+  try {
+
+    guardarInfoCurriculum();
+    console.log("Curriculum guardado correctamente");
+
+    const perfilId = usePerfilId();
+    const Id = perfilId.idPerfil;
+    router.push(`/perfil-settings/${Id}`);
+  } catch (error) {
+    console.error("Error al guardar el curriculum:", error);
+  }
+
+
+  handleCloseModal();
+};
+
+
+
+
+const guardarInfoCurriculum = async () => {
+
+
+  try {
+    // Llama a la función de mutación con los datos guardados en personalInfoData
+    await guardarInfoPersonalMutation.mutateAsync(personalInfoData.value);
+    console.log("Curriculum guardado correctamente");
+
+  } catch (error) {
+    console.error("Error al guardar el curriculum:", error);
+  }
+};
 </script>
