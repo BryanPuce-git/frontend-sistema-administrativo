@@ -55,7 +55,7 @@
 
 
           <PersonalInfoSection :id="Number(pcom_id)" @savePersonalInfo="handlePersonalInfoSave" />
-          <SalarioSection @saveSalario="handleSalarioSave" />
+          <SalarioSection :id="Number(pcom_id)" @saveSalario="handleSalarioSave" />
           <EducationSection @saveEducation="handleEducationSave" />
           <ProExperience @saveProExperience="handleProExperienceSave" />
           <LanguageSection @saveLanguages="handleLanguagesSave" />
@@ -98,6 +98,7 @@ import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
 import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
+import { useGuardarsalario } from '@/modules/curriculum/composables/useGuardarSalario';
 
 
 const router = useRouter();
@@ -171,8 +172,9 @@ const handleFiltersSave = (data) => {
 
 
 const guardarInfoPersonalMutation = useGuardarInfoPersonal();
+const guardarSalarioMutation = useGuardarsalario();
 
-const handleSaveCurriculum = (settings) => {
+const handleSaveCurriculum = async (settings) => {
   console.log("Datos de settings", settings);
 
   if (!Array.isArray(settings)) {
@@ -187,33 +189,55 @@ const handleSaveCurriculum = (settings) => {
     return;
   }
 
-  // Preparar solo los datos de personalInfo para enviar al backend
   const data = {
-    personalInfo: personalInfoData.value, // Solo personalInfoData
-    config: settings // Agregar la configuración recibida si es necesaria
+    personalInfo: personalInfoData.value,
+    salario: salarioData.value,
+    config: settings
   };
 
-  console.log("Datos a guardar (solo Personal Info)", data);
+  console.log("Datos a guardar", data);
 
-  guardarInfoCurriculum(data); // Llamar a la función de guardado solo con los datos de Personal Info
+ 
+  try {
+    await guardarInfoCurriculum(data);
+    await guardarSalario(data.salario); 
 
-  // Después de guardar, redirigir al perfil o realizar la acción necesaria
-  const perfilId = usePerfilId();
-  const Id = perfilId.idPerfil;
-  router.push(`/perfil-settings/${Id}`);
+    console.log("Toda la información guardada correctamente");
+
+    const perfilId = usePerfilId();
+    const Id = perfilId.idPerfil;
+    router.push(`/perfil-settings/${Id}`);
+  } catch (error) {
+    console.error("Error al guardar el curriculum:", error);
+  } 
+
 };
 
+// handleCloseModal();
 
 
-handleCloseModal();
 
 const guardarInfoCurriculum = async (data) => {
   try {
-    console.log("Datos enviados al servidor:", data); 
+    console.log("Datos enviados al servidor (Informacion Personal):", data.personalInfo);
+    
+    // Revisa que los valores nulos se envíen sin comillas
     await guardarInfoPersonalMutation.mutateAsync(data.personalInfo);
+
     console.log("Información personal guardada correctamente");
   } catch (error) {
     console.error("Error al guardar la información personal:", error);
+  }
+};
+
+
+const guardarSalario = async (salario) => {
+  try {
+    console.log("Datos de salario enviados al servidor:", salario);
+    await guardarSalarioMutation.mutateAsync(salario);
+    console.log("Salario guardado correctamente");
+  } catch (error) {
+    console.error("Error al guardar el salario:", error);
   }
 };
 
