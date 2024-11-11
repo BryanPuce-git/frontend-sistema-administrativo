@@ -150,10 +150,11 @@ import { usePerfilId } from '@/stores/use-perfil-Id.store';
 
 
 const router = useRouter();
+
 const goBack = () => {
-  const perfilId = usePerfilId();
-  const Id = perfilId.idPerfil;
-   router.push(`/perfil-settings/${Id}`);
+  const perfilIdStore = usePerfilId();
+  console.log("ID del perfil desde store:", perfilIdStore.idPerfil);
+   router.push(`/perfil-settings/${perfilIdStore.idPerfil}`);
 };
 
 // Estado para mostrar u ocultar el Drawer
