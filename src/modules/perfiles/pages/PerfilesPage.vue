@@ -371,7 +371,7 @@ const componentes = ref<ItemCatalogo[]>([]);
 
 //Guardando en el store
 perfilStore.setPerfil(nombre.value, nivel.value, opciones.value);
-console.log("Opciones en el store", opciones.value)
+// console.log("Opciones en el store", opciones.value)
 
 
 
@@ -698,13 +698,13 @@ const cargarComponentes = async () => {
         componentes.value = response;
 
         // Imprime los nombres de los componentes
-        console.log('Componentes cargados:', componentes.value.map(comp => comp['Item Nombre']));
+        // console.log('Componentes cargados:', componentes.value.map(comp => comp['Item Nombre']));
 
         // Imprime los IDs y nombres de los componentes
-        console.log('IDs y nombres de los componentes:');
-        componentes.value.forEach(comp => {
-            console.log(`ID: ${comp['Id']}, Nombre: ${comp['Item Nombre']}`);
-        });
+        // console.log('IDs y nombres de los componentes:');
+        // componentes.value.forEach(comp => {
+        //     console.log(`ID: ${comp['Id']}, Nombre: ${comp['Item Nombre']}`);
+        // });
 
     } catch (error) {
         console.error('Error al cargar los componentes del catálogo:', error);

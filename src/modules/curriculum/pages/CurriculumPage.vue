@@ -64,12 +64,13 @@
 
         </div>
       </div>
-      <div class="flex justify-end  mb-5 mr-5">
+      <div class="flex justify-end mb-5 mr-5">
         <button type="button" @click="openModal"
           class="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
           Guardar
         </button>
       </div>
+
 
 
     </form>
@@ -140,7 +141,7 @@ const goBack = () => {
 
 const handlePersonalInfoSave = (data) => {
   console.log("Datos recibidos de PersonalInfoSection:", data);
-  personalInfoData.value = data;  
+  personalInfoData.value = data;
 };
 
 
@@ -172,8 +173,8 @@ const handleFiltersSave = (data) => {
 const guardarInfoPersonalMutation = useGuardarInfoPersonal();
 
 const handleSaveCurriculum = (settings) => {
-  
-  console.log("Datos de settings",settings);
+  console.log("Datos de settings", settings);
+
   if (!Array.isArray(settings)) {
     console.error('Se esperaban los datos en formato array, pero se recibió:', settings);
     return;
@@ -181,55 +182,40 @@ const handleSaveCurriculum = (settings) => {
 
   // Verificar si la suma de los porcentajes es 100
   const totalPercentage = settings.reduce((acc, curr) => acc + (curr.value || 0), 0);
-
   if (totalPercentage !== 100) {
     console.error('La suma total de los porcentajes no es 100, es:', totalPercentage);
     return;
   }
 
-  // Si todo es correcto, hacer la acción de guardar los datos
-  console.log("Configuración de los porcentajes:", settings);
-  // Preparar todos los datos para enviarlos al backend
+  // Preparar solo los datos de personalInfo para enviar al backend
   const data = {
-    personalInfo: personalInfoData.value,
-    salario: salarioData.value,
-    education: educationData.value,
-    proExperience: proExperienceData.value,
-    language: languageData.value,
-    skills: skillsData.value,
-    filters: filtersData.value,
+    personalInfo: personalInfoData.value, // Solo personalInfoData
+    config: settings // Agregar la configuración recibida si es necesaria
   };
 
-  console.log("Datos de información personal", personalInfoData.value);
-  try {
+  console.log("Datos a guardar (solo Personal Info)", data);
 
-    guardarInfoCurriculum();
-    console.log("Curriculum guardado correctamente");
+  guardarInfoCurriculum(data); // Llamar a la función de guardado solo con los datos de Personal Info
 
-    const perfilId = usePerfilId();
-    const Id = perfilId.idPerfil;
-    router.push(`/perfil-settings/${Id}`);
-  } catch (error) {
-    console.error("Error al guardar el curriculum:", error);
-  }
-
-
-  handleCloseModal();
+  // Después de guardar, redirigir al perfil o realizar la acción necesaria
+  const perfilId = usePerfilId();
+  const Id = perfilId.idPerfil;
+  router.push(`/perfil-settings/${Id}`);
 };
 
 
 
+handleCloseModal();
 
-const guardarInfoCurriculum = async () => {
-
-
+const guardarInfoCurriculum = async (data) => {
   try {
-    // Llama a la función de mutación con los datos guardados en personalInfoData
-    await guardarInfoPersonalMutation.mutateAsync(personalInfoData.value);
-    console.log("Curriculum guardado correctamente");
-
+    console.log("Datos enviados al servidor:", data); 
+    await guardarInfoPersonalMutation.mutateAsync(data.personalInfo);
+    console.log("Información personal guardada correctamente");
   } catch (error) {
-    console.error("Error al guardar el curriculum:", error);
+    console.error("Error al guardar la información personal:", error);
   }
 };
+
+
 </script>

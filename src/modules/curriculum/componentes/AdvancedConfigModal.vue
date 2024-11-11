@@ -5,34 +5,24 @@
 
       <!-- Porcentaje total -->
       <div class="mb-4">
-        <p class="text-gray-600">Ajusta la importancia de las secciones. Total: <span class="font-semibold">{{ totalPercentage }}%</span></p>
+        <p class="text-gray-600">Ajusta la importancia de las secciones. Total: <span class="font-semibold">{{
+            totalPercentage }}%</span></p>
       </div>
 
       <div class="space-y-4">
         <!-- Slider para cada configuración -->
         <div v-for="(item, index) in settings" :key="index" class="flex items-center justify-between">
           <span>{{ item.label }}</span>
-          <input 
-            type="range" 
-            v-model.number="item.value" 
-            @input="updateTotalPercentage()" 
-            min="0" 
-            max="100" 
-            class="slider"
-          >
+          <input type="range" v-model.number="item.value" @input="updateTotalPercentage()" min="0" max="100"
+            class="slider">
           <span>{{ item.value }}%</span>
         </div>
       </div>
 
       <div class="flex justify-end mt-6">
         <button @click="handleClose" class="bg-gray-500 text-white px-4 py-2 rounded-lg" type="button">Cancelar</button>
-        <button 
-          @click="handleSave" 
-          class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2" 
-          type="button" 
-          :disabled="!isSaveEnabled"
-          :class="{ 'bg-blue-300 cursor-not-allowed': !isSaveEnabled }"
-        >
+        <button @click="handleSave" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2" type="button"
+          :disabled="!isSaveEnabled" :class="{ 'bg-blue-300 cursor-not-allowed': !isSaveEnabled }">
           Aceptar
         </button>
       </div>
@@ -79,13 +69,13 @@ const handleClose = () => {
   emit('close');
 };
 
-// Función para manejar el guardado de la configuración
+
 const handleSave = () => {
-  emit('save', settings.value); // Emitir los datos de configuración al componente padre
-  handleClose(); // Cerrar el modal
+  emit('save', settings.value); 
+  handleClose();
 };
 
-// Verifica el porcentaje total cada vez que cambia un slider
+
 watch(settings, updateTotalPercentage, { deep: true });
 </script>
 
@@ -96,7 +86,8 @@ watch(settings, updateTotalPercentage, { deep: true });
 
 /* Estilo para el botón deshabilitado */
 button:disabled {
-  background-color: #9CA3AF; /* Color gris para el botón deshabilitado */
+  background-color: #9CA3AF;
+  /* Color gris para el botón deshabilitado */
   cursor: not-allowed;
 }
 </style>
