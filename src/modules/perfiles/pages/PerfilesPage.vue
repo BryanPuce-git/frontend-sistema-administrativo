@@ -336,10 +336,11 @@ onMounted(async () => {
 
 const irAPerfilSettings = (Id: number) => {
     const perfilId = usePerfilId();
-    perfilId.setPerfil(Id);
+    perfilId.setPerfil(Id); 
     router.push(`/perfil-settings/${Id}`);
-    console.log('Id del perfil guardado', Id)
+    console.log('Id del perfil guardado', Id);
 };
+
 
 const router = useRouter();
 const guardarPerfil = useGuardarPerfil();

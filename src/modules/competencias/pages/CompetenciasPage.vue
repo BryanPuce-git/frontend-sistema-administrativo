@@ -116,16 +116,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import { useRouter } from 'vue-router';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
 
 const router = useRouter();
+
 const goBack = () => {
-  const perfilId = usePerfilId();
-  const Id = perfilId.idPerfil;
-   router.push(`/perfil-settings/${Id}`);
+  const perfilIdStore = usePerfilId();
+  console.log("ID del perfil desde store:", perfilIdStore.idPerfil);
+   router.push(`/perfil-settings/${perfilIdStore.idPerfil}`);
 };
 
 const mostrarPanel = ref(false);
@@ -223,6 +224,8 @@ const categoriasFiltradas = computed(() => {
   const searchLowerCase = busqueda.value.toLowerCase();
   return categorias.value.filter(categoria => categoria.nombre.toLowerCase().includes(searchLowerCase));
 });
+
+
 </script>
 
 <style scoped>

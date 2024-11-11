@@ -25,13 +25,14 @@
                     <input v-model="edadDesde" type="number" id="edad-desde" required
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Inserta edad mínima requerida" />
-                </div>
-
-                <div>
                     <label for="edad-hasta" class="block text-gray-700 text-sm font-bold mb-2">Edad Hasta</label>
                     <input v-model="edadHasta" type="number" id="edad-hasta" required
                         class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Inserta edad máxima requerida" />
+                    <!-- Mensaje de advertencia para Edad -->
+                    <p v-if="excluyentesDesdeHasta && (!edadDesde || !edadHasta)" class="text-red-500 text-sm mt-1">
+                        Este campo es obligatorio debido a la selección excluyente.
+                    </p>
                 </div>
 
                 <!-- Género -->
@@ -45,6 +46,10 @@
                             {{ item['Item Nombre'] }}
                         </option>
                     </select>
+                    <!-- Mensaje de advertencia para Género -->
+                    <p v-if="excluyentesGenero && !generoId" class="text-red-500 text-sm mt-1">
+                        Este campo es obligatorio debido a la selección excluyente.
+                    </p>
                 </div>
 
                 <!-- Ciudad -->
@@ -58,6 +63,10 @@
                             {{ item['Item Nombre'] }}
                         </option>
                     </select>
+                    <!-- Mensaje de advertencia para Ciudad -->
+                    <p v-if="excluyentesCiudad && !ciudadId" class="text-red-500 text-sm mt-1">
+                        Este campo es obligatorio debido a la selección excluyente.
+                    </p>
                 </div>
 
                 <!-- Estado civil -->
@@ -71,6 +80,10 @@
                             {{ item['Item Nombre'] }}
                         </option>
                     </select>
+                    <!-- Mensaje de advertencia para Estado civil -->
+                    <p v-if="excluyentesEstadoCivil && !estadoCivilId" class="text-red-500 text-sm mt-1">
+                        Este campo es obligatorio debido a la selección excluyente.
+                    </p>
                 </div>
 
                 <!-- Capacidad de reubicación -->
@@ -84,6 +97,10 @@
                             {{ item['Item Nombre'] }}
                         </option>
                     </select>
+                    <!-- Mensaje de advertencia para Capacidad de reubicación -->
+                    <p v-if="excluyentesReubicacion && !reubicacionId" class="text-red-500 text-sm mt-1">
+                        Este campo es obligatorio debido a la selección excluyente.
+                    </p>
                 </div>
 
                 <!-- Candidatos con discapacidad -->
@@ -97,6 +114,10 @@
                             {{ item['Item Nombre'] }}
                         </option>
                     </select>
+                    <!-- Mensaje de advertencia para Candidatos con discapacidad -->
+                    <p v-if="excluyentesDiscapacidad && !discapacidadId" class="text-red-500 text-sm mt-1">
+                        Este campo es obligatorio debido a la selección excluyente.
+                    </p>
                 </div>
             </div>
 
@@ -141,13 +162,8 @@
             </div>
         </div>
     </div>
-
-    <!-- <button @click="guardarInformacionPersonal" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2" type="button">
-        Guardar
-    </button> -->
-
 </template>
-  
+
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
@@ -240,6 +256,9 @@ watch(discapacidadId, (newId) => {
     const selected = discapacidadOptions.value.find(item => item.Id === newId);
     discapacidadNombre.value = selected ? selected['Item Nombre'] : "";
 });
+
+
+
 
 const consultarcatalogo = useConsultarCatalogo();
 

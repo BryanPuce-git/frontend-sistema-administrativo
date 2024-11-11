@@ -463,7 +463,7 @@ const irACurriculum = () => {
 
 const irAKnowledge = () => {
   if (conocimientoId.value) {
-    router.push({ name: '/conocimiento', params: { id: conocimientoId.value } });
+    router.push({ name: 'conocimiento', params: { id: conocimientoId.value } });
   } else {
     console.warn('ID del componente "CONOCIMIENTO" no disponible.');
   }
@@ -471,7 +471,7 @@ const irAKnowledge = () => {
 
 const irAEntrevista = () => {
   if (videoEntrevistaId.value) {
-    router.push({ name: '/entrevista', params: { id: videoEntrevistaId.value } });
+    router.push({ name: 'videoEntrevista', params: { id: videoEntrevistaId.value } });
   } else {
     console.warn('ID del componente "VIDEO ENTREVISTA" no disponible.');
   }
@@ -479,7 +479,7 @@ const irAEntrevista = () => {
 
 const irACompetencia = () => {
   if (competenciasId.value) {
-    router.push({ name: '/competencias', params: { id: competenciasId.value } });
+    router.push({ name: 'competencia', params: { id: competenciasId.value } });
   } else {
     console.warn('ID del componente "COMPETENCIAS" no disponible.');
   }

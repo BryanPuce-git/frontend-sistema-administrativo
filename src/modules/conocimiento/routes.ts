@@ -2,10 +2,11 @@ import type { RouteRecordRaw } from 'vue-router';
 
 const routes: Array<RouteRecordRaw> = [
     {
-        path: '/conocimiento',
+        path: '/conocimiento/:id',
         name: 'conocimiento',
         component: () => import('./pages/KnowledgePage.vue'),
-        meta: { requiresAuth: true }, 
+        meta: { requiresAuth: true },
+        props: true 
     },
     
 ];
