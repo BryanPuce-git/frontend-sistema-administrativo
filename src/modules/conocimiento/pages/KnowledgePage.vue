@@ -90,7 +90,7 @@ const router = useRouter();
 const goBack = () => {
   const perfilIdStore = usePerfilId();
   console.log("ID del perfil desde store:", perfilIdStore.idPerfil);
-   router.push(`/perfil-settings/${perfilIdStore.idPerfil}`);
+  router.push(`/perfil-settings/${perfilIdStore.idPerfil}`);
 };
 
 const questionarios = ref([

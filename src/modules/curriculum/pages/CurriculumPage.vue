@@ -82,7 +82,6 @@
 </template>
 
 <script setup>
-
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref } from 'vue';
@@ -97,9 +96,7 @@ import SkillsKnowledge from '../componentes/SkillsKnowledge.vue';
 import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
-import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
-import { useGuardarsalario } from '@/modules/curriculum/composables/useGuardarSalario';
-
+import { useGuardarCurriculumCompleto } from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
 
 const router = useRouter();
 const route = useRoute();
@@ -112,26 +109,16 @@ const languageData = ref(null);
 const skillsData = ref(null);
 const filtersData = ref(null);
 
-
-
 const pcom_id = ref(route.params.id);
+const { guardarCurriculumCompleto } = useGuardarCurriculumCompleto();
 
 const openModal = () => {
   isModalOpen.value = true;
 };
 
-
-// const handleSave = (settings) => {
-//   console.log(settings);
-//   closeModal();
-//   router.push('/perfil-settings');
-// };
-
 const handleCloseModal = () => {
   isModalOpen.value = false;
 };
-
-
 
 const goBack = () => {
   const perfilId = usePerfilId();
@@ -139,12 +126,10 @@ const goBack = () => {
   router.push(`/perfil-settings/${Id}`);
 };
 
-
 const handlePersonalInfoSave = (data) => {
   console.log("Datos recibidos de PersonalInfoSection:", data);
   personalInfoData.value = data;
 };
-
 
 const handleSalarioSave = (data) => {
   salarioData.value = data;
@@ -170,10 +155,6 @@ const handleFiltersSave = (data) => {
   filtersData.value = data;
 };
 
-
-const guardarInfoPersonalMutation = useGuardarInfoPersonal();
-const guardarSalarioMutation = useGuardarsalario();
-
 const handleSaveCurriculum = async (settings) => {
   console.log("Datos de settings", settings);
 
@@ -182,7 +163,6 @@ const handleSaveCurriculum = async (settings) => {
     return;
   }
 
-  // Verificar si la suma de los porcentajes es 100
   const totalPercentage = settings.reduce((acc, curr) => acc + (curr.value || 0), 0);
   if (totalPercentage !== 100) {
     console.error('La suma total de los porcentajes no es 100, es:', totalPercentage);
@@ -197,11 +177,8 @@ const handleSaveCurriculum = async (settings) => {
 
   console.log("Datos a guardar", data);
 
- 
   try {
-    await guardarInfoCurriculum(data);
-    await guardarSalario(data.salario); 
-
+    await guardarCurriculumCompleto.mutateAsync(data);
     console.log("Toda la información guardada correctamente");
 
     const perfilId = usePerfilId();
@@ -209,37 +186,8 @@ const handleSaveCurriculum = async (settings) => {
     router.push(`/perfil-settings/${Id}`);
   } catch (error) {
     console.error("Error al guardar el curriculum:", error);
-  } 
-
-};
-
-// handleCloseModal();
-
-
-
-const guardarInfoCurriculum = async (data) => {
-  try {
-    console.log("Datos enviados al servidor (Informacion Personal):", data.personalInfo);
-    
-    // Revisa que los valores nulos se envíen sin comillas
-    await guardarInfoPersonalMutation.mutateAsync(data.personalInfo);
-
-    console.log("Información personal guardada correctamente");
-  } catch (error) {
-    console.error("Error al guardar la información personal:", error);
   }
 };
-
-
-const guardarSalario = async (salario) => {
-  try {
-    console.log("Datos de salario enviados al servidor:", salario);
-    await guardarSalarioMutation.mutateAsync(salario);
-    console.log("Salario guardado correctamente");
-  } catch (error) {
-    console.error("Error al guardar el salario:", error);
-  }
-};
-
 
 </script>
+
