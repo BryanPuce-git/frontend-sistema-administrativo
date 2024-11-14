@@ -83,6 +83,7 @@
 import { onMounted, ref, watch } from 'vue';
 import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
 import { defineEmits, defineProps } from 'vue';
+import { useApi } from '@/composables/use-api';
 
 const props = defineProps({
   id: {
@@ -140,8 +141,38 @@ watch(
   { deep: true }
 );
 
+
+
+const obtenerSalario = async () => {
+    try {
+        const response = await useApi.get(`/api/v1/curriculum/salario/${props.id}`);
+        console.log("Respuesta completa de Salario:", response.data);
+
+        if (Array.isArray(response.data) && response.data.length > 0) {
+            const salarioData = response.data[0];
+            
+            salarioDesde.value = salarioData.sal_desde || "";
+            salarioHasta.value = salarioData.sal_hasta || "";
+            moneda.value = salarioData.sal_moneda || "";
+            excluyente.value = salarioData.sal_salario_excluyente === 1;
+            
+            console.log("Datos de Salario después de asignar:", {
+                salarioDesde: salarioDesde.value,
+                salarioHasta: salarioHasta.value,
+                moneda: moneda.value,
+                excluyente: excluyente.value,
+            });
+        } else {
+            console.warn("No se encontraron datos de salario para este perfil.");
+        }
+    } catch (error) {
+        console.error("Error al obtener el salario:", error);
+    }
+};
+
 // Lifecycle
 onMounted(() => {
     fetchMonedaOptions();
+    obtenerSalario();
 });
 </script>

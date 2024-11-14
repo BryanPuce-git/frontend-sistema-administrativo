@@ -549,8 +549,14 @@ const guardar = async () => {
         cerrarModal();
 
         setTimeout(() => {
-            router.replace('/perfil-settings');
+            const perfilIdGuardar = usePerfilId();
+            perfilIdGuardar.setPerfil(perfilId);
+            console.log('Id del perfil guardado', perfilId);
+            router.push(`/perfil-settings/${perfilId}`);
+            
         }, 100);
+
+        
     } catch (error) {
         console.error('Error guardando el perfil:', error);
         Swal.fire({

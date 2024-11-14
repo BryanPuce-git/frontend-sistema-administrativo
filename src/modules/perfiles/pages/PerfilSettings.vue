@@ -33,8 +33,7 @@
             <!-- Comprobamos si hay componentes disponibles -->
             <template v-if="componentesDisponibles.length > 0">
               <li v-for="componente in componentesDisponibles" :key="componente.id_componente">
-                <button @click="asignarComponente(componente)"
-                  class="text-blue-600 hover:underline w-full text-left">
+                <button @click="asignarComponente(componente)" class="text-blue-600 hover:underline w-full text-left">
                   {{ componente.no_componente }}
                 </button>
               </li>
@@ -270,7 +269,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted  } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
@@ -340,24 +339,33 @@ const agregarComponente = async (perfilId: number) => {
 };
 
 
-const asignarComponente = (componente : Componente) => {
-  // Solo agregar si el componente no está ya en la lista asignada
+const asignarComponente = async (componente : Componente) => {
+  // Verifica que el componente no esté ya en la lista
   if (!componentesAsignados.value.some(c => c.id_componente === componente.id_componente)) {
+    // Agrega el componente a la lista asignada
     componentesAsignados.value.push(componente);
-    console.log(`Componente agregado: ${componente.no_componente}`);
 
-    // Asegurarse de que se envía como un arreglo
-    actualizarComponentes([componente.id_componente], componente.perf_id); // Envíalo como [id_componente]
+    // Actualiza la base de datos para persistir el cambio
+    try {
+      await actualizarComponentes([componente.id_componente], componente.perf_id);
+      console.log(`Componente ${componente.no_componente} asignado correctamente.`);
+
+      await obtenerComponentesPorPerfilId(componente.perf_id);
+
+      // Elimina de la lista de componentes disponibles
+      componentesDisponibles.value = componentesDisponibles.value.filter(c => c.id_componente !== componente.id_componente);
+      mostrarComponentesDisponibles.value = false;
+
+    } catch (error) {
+      console.error(`Error al asignar el componente ${componente.no_componente}:`, error);
+    }
   }
-
-  // Eliminarlo de la lista de disponibles
-  componentesDisponibles.value = componentesDisponibles.value.filter(c => c.id_componente !== componente.id_componente);
-  mostrarComponentesDisponibles.value = false; // Cerrar dropdown
 };
 
 
 
-const curriculumId = ref<number| null>(null);
+
+const curriculumId = ref<number | null>(null);
 const conocimientoId = ref<number | null>(null);
 const videoEntrevistaId = ref<number | null>(null);
 const discId = ref<number | null>(null);
@@ -366,7 +374,7 @@ const competenciasId = ref<number | null>(null);
 
 
 // Función para obtener los componentes por ID de perfil
-const obtenerComponentesPorPerfilId = async (perfilId : number) => {
+const obtenerComponentesPorPerfilId = async (perfilId: number) => {
   try {
     const response = await useApi.get(`/api/v1/Perfiles-Componentes/Componentes/${perfilId}`);
     console.log('Respuesta de componentes:', response.data);
@@ -537,7 +545,7 @@ const eliminarComponente = (nombreComponente: string) => {
 //   }
 // };
 
-const actualizarComponentes = async (componentesIds :number[], perfilId : number) => {
+const actualizarComponentes = async (componentesIds: number[], perfilId: number) => {
   for (const idComp of componentesIds) {
     try {
       await useApi.patch(`/api/v1/Perfiles-Componentes/${perfilId}/${idComp}/${idComp}`);

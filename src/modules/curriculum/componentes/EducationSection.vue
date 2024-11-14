@@ -149,6 +149,7 @@
 import { onMounted, ref, computed, watch } from 'vue';
 import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
 import { defineProps, defineEmits } from 'vue';
+import { useApi } from '@/composables/use-api';
 
 const props = defineProps({
     id: {
@@ -254,10 +255,40 @@ watch(
     { deep: true }
 );
 
+const obtenerEducacion = async () => {
+    try {
+        const response = await useApi.get(`/api/v1/curriculum/educacion/${props.id}`);
+        console.log("Respuesta completa de Educación:", response.data);
+
+        if (Array.isArray(response.data) && response.data.length > 0) {
+            const educacionData = response.data[0];
+
+            nivelEstudios.value = educacionData.edu_nivel_estudios || "";
+            estadoEstudios.value = educacionData.edu_estado_estudios || "";
+            areasEstudio.value = educacionData.edu_area_estudios || "";
+            institucionEducativa.value = educacionData.edu_institucion_educativa || "";
+            excluyente.value = educacionData.edu_educacion_excluyente === 1;
+
+            console.log("Datos de Educación después de asignar:", {
+                nivelEstudios: nivelEstudios.value,
+                estadoEstudios: estadoEstudios.value,
+                areasEstudio: areasEstudio.value,
+                institucionEducativa: institucionEducativa.value,
+                excluyente: excluyente.value,
+            });
+        } else {
+            console.warn("No se encontraron datos de educación para este perfil.");
+        }
+    } catch (error) {
+        console.error("Error al obtener la educación:", error);
+    }
+};
+
 // Fetch data al montar
 onMounted(() => {
     fetchNivelEstudiosOptions();
     fetchEstadoEstudiosOptions();
     fetchAreaEstudiosOptions();
+    obtenerEducacion();
 });
 </script>

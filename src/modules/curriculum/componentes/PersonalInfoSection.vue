@@ -168,15 +168,15 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
-import { defineProps, defineEmits  } from 'vue';
-
+import { defineProps, defineEmits } from 'vue';
+import { useApi } from '@/composables/use-api';
 
 
 const props = defineProps({
-  id: {
-    type: Number,
-    required: true,
-  },
+    id: {
+        type: Number,
+        required: true,
+    },
 });
 
 const emit = defineEmits(['savePersonalInfo']);
@@ -265,7 +265,7 @@ const consultarcatalogo = useConsultarCatalogo();
 const fetchEstadoCivilOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoEstadoCivil);
-        estadoCivilOptions.value = response; 
+        estadoCivilOptions.value = response;
         // console.log("Datos recibidos del estado civil:", response); 
     } catch (error) {
         // console.error("Error al consultar el catálogo de estado civil:", error);
@@ -275,7 +275,7 @@ const fetchEstadoCivilOptions = async () => {
 const fetchGeneroOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoGenero);
-        generoOptions.value = response; 
+        generoOptions.value = response;
         // console.log("Datos recibidos del género:", response); 
     } catch (error) {
         // console.error("Error al consultar el catálogo de género:", error);
@@ -285,7 +285,7 @@ const fetchGeneroOptions = async () => {
 const fetchReubicacionOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoReubicacion);
-        reubicacionOptions.value = response; 
+        reubicacionOptions.value = response;
         // console.log("Datos recibidos del reubicación:", response); 
     } catch (error) {
         // console.error("Error al consultar el catálogo de reubicación:", error);
@@ -295,7 +295,7 @@ const fetchReubicacionOptions = async () => {
 const fetchDiscapacidadOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoDiscapacidad);
-        discapacidadOptions.value = response; 
+        discapacidadOptions.value = response;
         // console.log("Datos recibidos del discapacidad", response); 
     } catch (error) {
         // console.error("Error al consultar el catálogo de discapacidad", error);
@@ -305,12 +305,12 @@ const fetchDiscapacidadOptions = async () => {
 const fetchCiudadesOptions = async () => {
     try {
         const response = await consultarcatalogo.mutateAsync(codigoCatalogoCuidades);
-        ciudadesOptions.value = response; 
+        ciudadesOptions.value = response;
         // console.log("Datos recibidos del cuidades", response); 
     } catch (error) {
         // console.error("Error al consultar el catálogo de cuidades", error);
     }
-}; 
+};
 
 const validarCamposExcluyentes = () => {
     mensajeError.value = ""; // Reinicia el mensaje de error
@@ -387,32 +387,77 @@ const guardarInformacionPersonal = () => {
 };
 
 watch(
-  [
-    edadDesde,
-    edadHasta,
-    generoId,
-    estadoCivilId,
-    ciudadId,
-    reubicacionId,
-    discapacidadId,
-    excluyentesDesdeHasta,
-    excluyentesEstadoCivil,
-    excluyentesGenero,
-    excluyentesCiudad,
-    excluyentesReubicacion,
-    excluyentesDiscapacidad
-  ],
-  guardarInformacionPersonal,
-  { deep: true }
+    [
+        edadDesde,
+        edadHasta,
+        generoId,
+        estadoCivilId,
+        ciudadId,
+        reubicacionId,
+        discapacidadId,
+        excluyentesDesdeHasta,
+        excluyentesEstadoCivil,
+        excluyentesGenero,
+        excluyentesCiudad,
+        excluyentesReubicacion,
+        excluyentesDiscapacidad
+    ],
+    guardarInformacionPersonal,
+    { deep: true }
 );
 
-onMounted(() => {
-    fetchEstadoCivilOptions();
-    fetchGeneroOptions();
-    fetchReubicacionOptions();
-    fetchDiscapacidadOptions();
-    fetchCiudadesOptions();
-    
+const obtenerInformacionPersonal = async () => {
+    try {
+        const response = await useApi.get(`/api/v1/curriculum/informacion-personal/${props.id}`);
+        console.log("Respuesta completa de la API:", response.data);
+        
+        // Verifica que la respuesta contenga al menos un elemento en el array
+        if (Array.isArray(response.data) && response.data.length > 0) {
+            const data = response.data[0]; // Primer elemento del array
+
+            // Asigna los valores obtenidos
+            edadDesde.value = data.inf_edad_desde;
+            edadHasta.value = data.inf_edad_hasta;
+            generoId.value = data.inf_genero;
+            ciudadId.value = data.inf_ciudad_cargo;
+            estadoCivilId.value = data.inf_estado_civil;
+            reubicacionId.value = data.inf_capacidad_reubicacion;
+            discapacidadId.value = data.inf_candidatos_discapacidad;
+            excluyentesDesdeHasta.value = data.inf_edad_excluyente === 1;
+            excluyentesGenero.value = data.inf_genero_excluyente === 1;
+            excluyentesEstadoCivil.value = data.inf_estado_civil_excluyente === 1;
+            excluyentesCiudad.value = data.inf_ciudad_cargo_excluyente === 1;
+            excluyentesReubicacion.value = data.inf_capacidad_reubicacion_excluyente === 1;
+            excluyentesDiscapacidad.value = data.inf_candidatos_discapacidad_excluyente === 1;
+
+            console.log("Datos después de asignar:", {
+                ciudadId: ciudadId.value,
+                discapacidadId: discapacidadId.value,
+                edadDesde: edadDesde.value,
+                edadHasta: edadHasta.value,
+                estadoCivilId: estadoCivilId.value,
+                generoId: generoId.value,
+                reubicacionId: reubicacionId.value,
+            });
+        } else {
+            console.warn("La respuesta no contiene datos válidos.");
+        }
+    } catch (error) {
+        console.error("Error al obtener la información personal:", error);
+    }
+};
+
+
+
+onMounted(async () => {
+    await Promise.all([
+        fetchEstadoCivilOptions(),
+        fetchGeneroOptions(),
+        fetchReubicacionOptions(),
+        fetchDiscapacidadOptions(),
+        fetchCiudadesOptions()
+    ]);
+    obtenerInformacionPersonal();
 });
 
 </script>
