@@ -56,7 +56,7 @@
 
           <PersonalInfoSection :id="Number(pcom_id)" @savePersonalInfo="handlePersonalInfoSave" />
           <SalarioSection :id="Number(pcom_id)" @saveSalario="handleSalarioSave" />
-          <EducationSection @saveEducation="handleEducationSave" />
+          <EducationSection :id="Number(pcom_id)" @saveEducation="handleEducationSave" />
           <ProExperience @saveProExperience="handleProExperienceSave" />
           <LanguageSection @saveLanguages="handleLanguagesSave" />
           <SkillsKnowledge @saveSkills="handleSkillsSave" />
@@ -132,10 +132,12 @@ const handlePersonalInfoSave = (data) => {
 };
 
 const handleSalarioSave = (data) => {
+  console.log("Datos de salario recibidos:", data); // Verifica que los datos llegan
   salarioData.value = data;
 };
 
 const handleEducationSave = (data) => {
+  console.log("Datos de educación recibidos:", data); // Verifica que los datos llegan
   educationData.value = data;
 };
 
@@ -172,6 +174,7 @@ const handleSaveCurriculum = async (settings) => {
   const data = {
     personalInfo: personalInfoData.value,
     salario: salarioData.value,
+    educacion: educationData.value,
     config: settings
   };
 
