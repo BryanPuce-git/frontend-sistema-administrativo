@@ -57,7 +57,7 @@
           <PersonalInfoSection :id="Number(pcom_id)" @savePersonalInfo="handlePersonalInfoSave" />
           <SalarioSection :id="Number(pcom_id)" @saveSalario="handleSalarioSave" />
           <EducationSection :id="Number(pcom_id)" @saveEducation="handleEducationSave" />
-          <ProExperience @saveProExperience="handleProExperienceSave" />
+          <ProExperience :id="Number(pcom_id)" @saveProExperience="handleProExperienceSave" />
           <LanguageSection @saveLanguages="handleLanguagesSave" />
           <SkillsKnowledge @saveSkills="handleSkillsSave" />
           <FilterQuestionsSection @saveFilters="handleFiltersSave" />
@@ -97,7 +97,10 @@ import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
 import { useGuardarCurriculumCompleto } from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
-import { useApi } from '@/composables/use-api';
+import { useActualizarCurriculumCompleto } from '@/modules/curriculum/composables/useActualizarCurriculumCompleto';
+
+const  {actualizarCurriculumCompleto}  = useActualizarCurriculumCompleto();
+
 
 const router = useRouter();
 const route = useRoute();
@@ -133,16 +136,17 @@ const handlePersonalInfoSave = (data) => {
 };
 
 const handleSalarioSave = (data) => {
-  console.log("Datos de salario recibidos:", data); // Verifica que los datos llegan
+  console.log("Datos de salario recibidos:", data); 
   salarioData.value = data;
 };
 
 const handleEducationSave = (data) => {
-  console.log("Datos de educación recibidos:", data); // Verifica que los datos llegan
+  console.log("Datos de educación recibidos:", data);
   educationData.value = data;
 };
 
 const handleProExperienceSave = (data) => {
+  console.log("Datos de Experiencia recibidos:", data);
   proExperienceData.value = data;
 };
 
@@ -159,78 +163,60 @@ const handleFiltersSave = (data) => {
 };
 
 const handleSaveCurriculum = async (settings) => {
-  console.log("Datos de settings", settings);
+  console.log("Configuración recibida para guardar:", settings);
 
-  // Verificación de que settings sea un array
   if (!Array.isArray(settings)) {
-    console.error('Se esperaban los datos en formato array, pero se recibió:', settings);
+    console.error("Se esperaba un array para settings:", settings);
     return;
   }
 
-  // Verificación de que el porcentaje total sea 100%
   const totalPercentage = settings.reduce((acc, curr) => acc + (curr.value || 0), 0);
   if (totalPercentage !== 100) {
-    console.error('La suma total de los porcentajes no es 100, es:', totalPercentage);
+    console.error("El total de porcentajes no suma 100:", totalPercentage);
     return;
   }
 
   try {
-    // Manejo de PersonalInfo
-    if (personalInfoData.value && personalInfoData.value.inf_id) {
-      // Actualizar si ya tiene un `inf_id`
-      await useApi.patch(`/api/v1/curriculum/informacion-personal/${personalInfoData.value.inf_id}`, personalInfoData.value);
-      console.log("Información personal actualizada correctamente.");
-    } else {
-      // Crear si no tiene un `inf_id`
-      const response = await useApi.post(`/api/v1/curriculum/informacion-personal`, personalInfoData.value);
-      personalInfoData.value.inf_id = response.data.inf_id; // Asigna el nuevo ID
-      console.log("Información personal creada correctamente.");
-    }
-
-    // Manejo de Salario
-    if (salarioData.value && salarioData.value.sal_id) {
-      // Actualizar si ya tiene un `sal_id`
-      await useApi.patch(`/api/v1/curriculum/salario/${salarioData.value.sal_id}`, salarioData.value);
-      console.log("Salario actualizado correctamente.");
-    } else {
-      // Crear si no tiene un `sal_id`
-      const response = await useApi.post(`/api/v1/curriculum/salario`, salarioData.value);
-      salarioData.value.sal_id = response.data.sal_id; // Asigna el nuevo ID
-      console.log("Salario creado correctamente.");
-    }
-
-    // Manejo de Educación
-    if (educationData.value && educationData.value.edu_id) {
-      // Actualizar si ya tiene un `edu_id`
-      await useApi.patch(`/api/v1/curriculum/educacion/${educationData.value.edu_id}`, educationData.value);
-      console.log("Educación actualizada correctamente.");
-    } else {
-      // Crear si no tiene un `edu_id`
-      const response = await useApi.post(`/api/v1/curriculum/educacion`, educationData.value);
-      educationData.value.edu_id = response.data.edu_id; // Asigna el nuevo ID
-      console.log("Educación creada correctamente.");
-    }
-
-    // Configuración del resto de datos
+    // Consolidar los datos
     const data = {
       personalInfo: personalInfoData.value,
       salario: salarioData.value,
       educacion: educationData.value,
-      config: settings
+      config: settings,
     };
 
-    console.log("Datos a guardar", data);
+    console.log("Datos consolidados para guardar o actualizar:", data);
 
-    // Guardar configuración completa en la API
-    await guardarCurriculumCompleto.mutateAsync(data);
-    console.log("Toda la información guardada correctamente.");
+    // Verificar si ya existen los datos de PersonalInfo, Salario y Educación
+    const hasPersonalInfoId = data.personalInfo?.inf_id;
+    const hasSalarioId = data.salario?.sal_id;
+    const hasEducacionId = data.educacion?.edu_id;
 
-    // Redirigir al usuario a la página de perfil después de guardar todo
+    if (hasPersonalInfoId || hasSalarioId || hasEducacionId) {
+      // Si ya existen, actualizar los datos
+      const updateData = {
+        pcom_id: Number(pcom_id.value), // ID del perfil
+        personalInfo: data.personalInfo,
+        salario: data.salario,
+        educacion: data.educacion,
+      };
+
+      console.log("Actualizando datos:", updateData);
+      await actualizarCurriculumCompleto.mutateAsync(updateData);
+      console.log("Currículum actualizado correctamente.");
+    } else {
+      // Si no existen, guardar los datos como nuevos
+      console.log("Creando nuevos datos:", data);
+      await guardarCurriculumCompleto.mutateAsync(data);
+      console.log("Currículum creado correctamente.");
+    }
+
+    // Redirigir al usuario después de guardar o actualizar
     const perfilId = usePerfilId();
     const Id = perfilId.idPerfil;
     router.push(`/perfil-settings/${Id}`);
   } catch (error) {
-    console.error("Error al guardar el curriculum:", error);
+    console.error("Error al guardar o actualizar el currículum:", error);
   }
 };
 

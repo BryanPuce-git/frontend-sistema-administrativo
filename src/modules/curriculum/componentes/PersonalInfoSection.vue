@@ -341,106 +341,96 @@ const validarCamposExcluyentes = () => {
     return true;
 };
 
-
+const inf_id = ref(null);
 
 const guardarInformacionPersonal = () => {
     console.log("Guardando información personal...");
 
     const data = {
-        pcom_id: props.id,
+        inf_id: inf_id.value || null, // Incluye el ID si existe
+        pcom_id: props.id, // ID del perfil
         inf_edad_desde: edadDesde.value || null,
         inf_edad_hasta: edadHasta.value || null,
-
-        // Para género
         inf_genero: generoId.value || null,
-        genero: generoNombre.value || null,
-
-        // Para estado civil
         inf_estado_civil: estadoCivilId.value || null,
-        estado_civil: estadoCivilNombre.value || null,
-
-        // Para ciudad
         inf_ciudad_cargo: ciudadId.value || null,
-        ciudad_cargo: ciudadNombre.value || null,
-
-        // Para capacidad de reubicación
         inf_capacidad_reubicacion: reubicacionId.value || null,
-        capacidad_reubicacion: reubicacionNombre.value || null,
-
-        // Para discapacidad
         inf_candidatos_discapacidad: discapacidadId.value || null,
-        candidatos_discapacidad: discapacidadNombre.value || null,
-
-        // Campos excluyentes
         inf_edad_excluyente: excluyentesDesdeHasta.value ? 1 : 0,
         inf_estado_civil_excluyente: excluyentesEstadoCivil.value ? 1 : 0,
         inf_genero_excluyente: excluyentesGenero.value ? 1 : 0,
         inf_capacidad_reubicacion_excluyente: excluyentesReubicacion.value ? 1 : 0,
         inf_candidatos_discapacidad_excluyente: excluyentesDiscapacidad.value ? 1 : 0,
-        inf_ciudad_cargo_excluyente: excluyentesCiudad.value ? 1 : 0
+        inf_ciudad_cargo_excluyente: excluyentesCiudad.value ? 1 : 0,
     };
 
-    console.log("Datos de información personal", data);
+    console.log("Datos de información personal para enviar:", data);
 
     // Emitir los datos al componente principal (Curriculum)
-    emit('savePersonalInfo', data);
+    emit("savePersonalInfo", data);
 };
 
+
 watch(
-    [
-        edadDesde,
-        edadHasta,
-        generoId,
-        estadoCivilId,
-        ciudadId,
-        reubicacionId,
-        discapacidadId,
-        excluyentesDesdeHasta,
-        excluyentesEstadoCivil,
-        excluyentesGenero,
-        excluyentesCiudad,
-        excluyentesReubicacion,
-        excluyentesDiscapacidad
-    ],
-    guardarInformacionPersonal,
-    { deep: true }
+  [
+    inf_id, // Si inf_id cambia, se puede reaccionar (por ejemplo, cuando se obtiene desde la API)
+    edadDesde,
+    edadHasta,
+    generoId,
+    estadoCivilId,
+    ciudadId,
+    reubicacionId,
+    discapacidadId,
+    excluyentesDesdeHasta,
+    excluyentesEstadoCivil,
+    excluyentesGenero,
+    excluyentesCiudad,
+    excluyentesReubicacion,
+    excluyentesDiscapacidad,
+  ],
+  () => {
+    guardarInformacionPersonal(); // Llamar al método para emitir los datos al componente principal
+  },
+  { deep: true } // Observar cambios profundos en los objetos
 );
+
 
 const obtenerInformacionPersonal = async () => {
     try {
         const response = await useApi.get(`/api/v1/curriculum/informacion-personal/${props.id}`);
         console.log("Respuesta completa de la API:", response.data);
-        
-        // Verifica que la respuesta contenga al menos un elemento en el array
+
         if (Array.isArray(response.data) && response.data.length > 0) {
             const data = response.data[0]; // Primer elemento del array
 
             // Asigna los valores obtenidos
+            inf_id.value = data.inf_id || null; // Guardar inf_id para futuras actualizaciones
             edadDesde.value = data.inf_edad_desde;
             edadHasta.value = data.inf_edad_hasta;
             generoId.value = data.inf_genero;
-            ciudadId.value = data.inf_ciudad_cargo;
             estadoCivilId.value = data.inf_estado_civil;
+            ciudadId.value = data.inf_ciudad_cargo;
             reubicacionId.value = data.inf_capacidad_reubicacion;
             discapacidadId.value = data.inf_candidatos_discapacidad;
             excluyentesDesdeHasta.value = data.inf_edad_excluyente === 1;
-            excluyentesGenero.value = data.inf_genero_excluyente === 1;
             excluyentesEstadoCivil.value = data.inf_estado_civil_excluyente === 1;
+            excluyentesGenero.value = data.inf_genero_excluyente === 1;
             excluyentesCiudad.value = data.inf_ciudad_cargo_excluyente === 1;
             excluyentesReubicacion.value = data.inf_capacidad_reubicacion_excluyente === 1;
             excluyentesDiscapacidad.value = data.inf_candidatos_discapacidad_excluyente === 1;
 
-            console.log("Datos después de asignar:", {
-                ciudadId: ciudadId.value,
-                discapacidadId: discapacidadId.value,
+            console.log("Datos de información personal después de asignar:", {
+                inf_id: inf_id.value,
                 edadDesde: edadDesde.value,
                 edadHasta: edadHasta.value,
-                estadoCivilId: estadoCivilId.value,
                 generoId: generoId.value,
+                estadoCivilId: estadoCivilId.value,
+                ciudadId: ciudadId.value,
                 reubicacionId: reubicacionId.value,
+                discapacidadId: discapacidadId.value,
             });
         } else {
-            console.warn("La respuesta no contiene datos válidos.");
+            console.warn("No se encontraron datos de información personal para este perfil.");
         }
     } catch (error) {
         console.error("Error al obtener la información personal:", error);

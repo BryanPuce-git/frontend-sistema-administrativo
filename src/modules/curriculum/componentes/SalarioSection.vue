@@ -120,54 +120,55 @@ const fetchMonedaOptions = async () => {
     }
 };
 
-// Emit salary data
-const guardarSalario = () => {
-    const data = {
-        pcom_id: props.id,
-        sal_desde: salarioDesde.value || null,
-        sal_hasta: salarioHasta.value || null,
-        sal_moneda: moneda.value || null,
-        sal_salario_excluyente: excluyente.value ? 1 : 0
-    };
+const sal_id = ref(null);
 
-    emit('saveSalario', data);
-    console.log("Enviando datos ...", data);
+const guardarSalario = () => {
+  const data = {
+    sal_id: sal_id.value || null, 
+    pcom_id: props.id,
+    sal_desde: salarioDesde.value || null,
+    sal_hasta: salarioHasta.value || null,
+    sal_moneda: moneda.value || null,
+    sal_salario_excluyente: excluyente.value ? 1 : 0,
+  };
+
+  emit("saveSalario", data);
+  console.log("Enviando datos ...", data);
 };
 
-// Watch for changes to fields and call guardarSalario
-watch(
-  [salarioDesde, salarioHasta, moneda, excluyente],
-  guardarSalario,
-  { deep: true }
-);
+
+watch([salarioDesde, salarioHasta, moneda, excluyente], guardarSalario, { deep: true });
 
 
 
 const obtenerSalario = async () => {
-    try {
-        const response = await useApi.get(`/api/v1/curriculum/salario/${props.id}`);
-        console.log("Respuesta completa de Salario:", response.data);
+  try {
+    const response = await useApi.get(`/api/v1/curriculum/salario/${props.id}`);
+    console.log("Respuesta completa de Salario:", response.data);
 
-        if (Array.isArray(response.data) && response.data.length > 0) {
-            const salarioData = response.data[0];
-            
-            salarioDesde.value = salarioData.sal_desde || "";
-            salarioHasta.value = salarioData.sal_hasta || "";
-            moneda.value = salarioData.sal_moneda || "";
-            excluyente.value = salarioData.sal_salario_excluyente === 1;
-            
-            console.log("Datos de Salario después de asignar:", {
-                salarioDesde: salarioDesde.value,
-                salarioHasta: salarioHasta.value,
-                moneda: moneda.value,
-                excluyente: excluyente.value,
-            });
-        } else {
-            console.warn("No se encontraron datos de salario para este perfil.");
-        }
-    } catch (error) {
-        console.error("Error al obtener el salario:", error);
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      const salarioData = response.data[0];
+
+      // Asignar valores
+      sal_id.value = salarioData.sal_id || null;
+      salarioDesde.value = salarioData.sal_desde || "";
+      salarioHasta.value = salarioData.sal_hasta || "";
+      moneda.value = salarioData.sal_moneda || "";
+      excluyente.value = salarioData.sal_salario_excluyente === 1;
+
+      console.log("Datos de Salario después de asignar:", {
+        sal_id: sal_id.value,
+        salarioDesde: salarioDesde.value,
+        salarioHasta: salarioHasta.value,
+        moneda: moneda.value,
+        excluyente: excluyente.value,
+      });
+    } else {
+      console.warn("No se encontraron datos de salario para este perfil.");
     }
+  } catch (error) {
+    console.error("Error al obtener el salario:", error);
+  }
 };
 
 // Lifecycle

@@ -233,58 +233,62 @@ const guardarAreas = () => {
     cerrarModal();
 };
 
-// Función para guardar educación y emitir los datos
-const guardarEducacion = () => {
-    const data = {
-        pcom_id: props.id,
-        edu_nivel_estudios: nivelEstudios.value || null,
-        edu_estado_estudios: estadoEstudios.value || null,
-        edu_area_estudios: areasEstudio.value || null,
-        edu_institucion_educativa: institucionEducativa.value || null,
-        edu_educacion_excluyente: excluyente.value ? 1 : 0,
-    };
+const edu_id = ref(null);
 
-    console.log("Datos de Educación:", data)
-    emit('saveEducation', data);
+const guardarEducacion = () => {
+  const data = {
+    edu_id: edu_id.value || null, // Incluye el ID si existe
+    pcom_id: props.id,
+    edu_nivel_estudios: nivelEstudios.value || null,
+    edu_estado_estudios: estadoEstudios.value || null,
+    edu_area_estudios: areasEstudio.value || null,
+    edu_institucion_educativa: institucionEducativa.value || null,
+    edu_educacion_excluyente: excluyente.value ? 1 : 0,
+  };
+
+  console.log("Datos de Educación:", data);
+  emit("saveEducation", data);
 };
 
-// Watch para observar cambios en los campos de educación y guardar automáticamente
+
 watch(
-    [nivelEstudios, estadoEstudios, areasEstudio, institucionEducativa, excluyente],
-    guardarEducacion,
-    { deep: true }
+  [nivelEstudios, estadoEstudios, areasEstudio, institucionEducativa, excluyente],
+  guardarEducacion,
+  { deep: true }
 );
 
 const obtenerEducacion = async () => {
-    try {
-        const response = await useApi.get(`/api/v1/curriculum/educacion/${props.id}`);
-        console.log("Respuesta completa de Educación:", response.data);
+  try {
+    const response = await useApi.get(`/api/v1/curriculum/educacion/${props.id}`);
+    console.log("Respuesta completa de Educación:", response.data);
 
-        if (Array.isArray(response.data) && response.data.length > 0) {
-            const educacionData = response.data[0];
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      const educacionData = response.data[0];
 
-            nivelEstudios.value = educacionData.edu_nivel_estudios || "";
-            estadoEstudios.value = educacionData.edu_estado_estudios || "";
-            areasEstudio.value = educacionData.edu_area_estudios || "";
-            institucionEducativa.value = educacionData.edu_institucion_educativa || "";
-            excluyente.value = educacionData.edu_educacion_excluyente === 1;
+      edu_id.value = educacionData.edu_id || null;
+      nivelEstudios.value = educacionData.edu_nivel_estudios || "";
+      estadoEstudios.value = educacionData.edu_estado_estudios || "";
+      areasEstudio.value = educacionData.edu_area_estudios || "";
+      institucionEducativa.value = educacionData.edu_institucion_educativa || "";
+      excluyente.value = educacionData.edu_educacion_excluyente === 1;
 
-            console.log("Datos de Educación después de asignar:", {
-                nivelEstudios: nivelEstudios.value,
-                estadoEstudios: estadoEstudios.value,
-                areasEstudio: areasEstudio.value,
-                institucionEducativa: institucionEducativa.value,
-                excluyente: excluyente.value,
-            });
-        } else {
-            console.warn("No se encontraron datos de educación para este perfil.");
-        }
-    } catch (error) {
-        console.error("Error al obtener la educación:", error);
+      console.log("Datos de Educación después de asignar:", {
+        edu_id: edu_id.value,
+        nivelEstudios: nivelEstudios.value,
+        estadoEstudios: estadoEstudios.value,
+        areasEstudio: areasEstudio.value,
+        institucionEducativa: institucionEducativa.value,
+        excluyente: excluyente.value,
+      });
+    } else {
+      console.warn("No se encontraron datos de educación para este perfil.");
     }
+  } catch (error) {
+    console.error("Error al obtener la educación:", error);
+  }
 };
 
-// Fetch data al montar
+
 onMounted(() => {
     fetchNivelEstudiosOptions();
     fetchEstadoEstudiosOptions();
