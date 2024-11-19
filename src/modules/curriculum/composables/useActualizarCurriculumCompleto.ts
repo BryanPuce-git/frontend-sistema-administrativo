@@ -6,12 +6,14 @@ import type { ServerError } from '../dto/serverError.dto';
 import type { InformacionPersonalRequest } from '../dto/InformacionPersonalRequest.dto';
 import type { SalarioRequest } from '../dto/SalarioRequest.dto';
 import type { EducacionRequest } from '../dto/EducacionResquest.dto';
+import type { ExperienciaRequest } from '../dto/Experiencia.dto';
 
 interface CurriculumData {
   personalInfo: InformacionPersonalRequest;
   salario: SalarioRequest;
   educacion: EducacionRequest;
-  pcom_id: number; // Identificador del perfil
+  experiencia: ExperienciaRequest
+  pcom_id: number; 
 }
 
 export const useActualizarCurriculumCompleto = () => {
@@ -34,15 +36,22 @@ export const useActualizarCurriculumCompleto = () => {
     return await useApi.patch(`/api/v1/curriculum/educacion/${pcom_id}`, data);
   };
 
+  // Función para actualizar la experiencia
+  const actualizarExperiencia = async (pcom_id: number, data: ExperienciaRequest) => {
+    console.log("datos de experiencia antes de actualizar ", data)
+    return await useApi.patch(`/api/v1/curriculum/educacion/${pcom_id}`, data);
+  };
+
   // Mutación para actualizar todo el curriculum
   const actualizarCurriculumCompleto = useMutation({
     mutationFn: async (data: CurriculumData) => {
-      const { pcom_id, personalInfo, salario, educacion } = data;
+      const { pcom_id, personalInfo, salario, educacion, experiencia } = data;
 
       // Actualizar cada sección de manera secuencial
       await actualizarInfoPersonal(pcom_id, personalInfo);
       await actualizarSalario(pcom_id, salario);
       await actualizarEducacion(pcom_id, educacion);
+      await actualizarExperiencia(pcom_id, experiencia);
     },
     onError: (error: AxiosError) => {
       const data = error.response?.data as ServerError;

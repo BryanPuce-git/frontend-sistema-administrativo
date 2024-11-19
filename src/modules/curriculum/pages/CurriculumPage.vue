@@ -99,7 +99,7 @@ import { usePerfilId } from '@/stores/use-perfil-Id.store';
 import { useGuardarCurriculumCompleto } from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
 import { useActualizarCurriculumCompleto } from '@/modules/curriculum/composables/useActualizarCurriculumCompleto';
 
-const  {actualizarCurriculumCompleto}  = useActualizarCurriculumCompleto();
+const { actualizarCurriculumCompleto } = useActualizarCurriculumCompleto();
 
 
 const router = useRouter();
@@ -108,7 +108,7 @@ const isModalOpen = ref(false);
 const personalInfoData = ref(null);
 const salarioData = ref(null);
 const educationData = ref(null);
-const proExperienceData = ref(null);
+const experienceData = ref(null);
 const languageData = ref(null);
 const skillsData = ref(null);
 const filtersData = ref(null);
@@ -136,7 +136,7 @@ const handlePersonalInfoSave = (data) => {
 };
 
 const handleSalarioSave = (data) => {
-  console.log("Datos de salario recibidos:", data); 
+  console.log("Datos de salario recibidos:", data);
   salarioData.value = data;
 };
 
@@ -147,7 +147,7 @@ const handleEducationSave = (data) => {
 
 const handleProExperienceSave = (data) => {
   console.log("Datos de Experiencia recibidos:", data);
-  proExperienceData.value = data;
+  experienceData.value = data;
 };
 
 const handleLanguagesSave = (data) => {
@@ -182,6 +182,7 @@ const handleSaveCurriculum = async (settings) => {
       personalInfo: personalInfoData.value,
       salario: salarioData.value,
       educacion: educationData.value,
+      experiencia: experienceData.value,
       config: settings,
     };
 
@@ -191,14 +192,16 @@ const handleSaveCurriculum = async (settings) => {
     const hasPersonalInfoId = data.personalInfo?.inf_id;
     const hasSalarioId = data.salario?.sal_id;
     const hasEducacionId = data.educacion?.edu_id;
+    const hasExperienciaId = data.experiencia?.exp_id;
 
-    if (hasPersonalInfoId || hasSalarioId || hasEducacionId) {
+    if (hasPersonalInfoId || hasSalarioId || hasEducacionId || hasExperienciaId) {
       // Si ya existen, actualizar los datos
       const updateData = {
-        pcom_id: Number(pcom_id.value), // ID del perfil
+        pcom_id: Number(pcom_id.value),
         personalInfo: data.personalInfo,
         salario: data.salario,
         educacion: data.educacion,
+        experiencia: data.experiencia,
       };
 
       console.log("Actualizando datos:", updateData);
@@ -221,4 +224,3 @@ const handleSaveCurriculum = async (settings) => {
 };
 
 </script>
-

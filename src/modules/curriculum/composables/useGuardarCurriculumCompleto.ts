@@ -7,11 +7,13 @@ import type { ServerError } from '../dto/serverError.dto';
 import type { InformacionPersonalRequest } from '../dto/InformacionPersonalRequest.dto';
 import type { SalarioRequest } from '../dto/SalarioRequest.dto';
 import type { EducacionRequest } from '../dto/EducacionResquest.dto';
+import type { ExperienciaRequest } from '../dto/Experiencia.dto';
 
 interface CurriculumData {
   personalInfo: InformacionPersonalRequest;
   salario: SalarioRequest;
   educacion: EducacionRequest;
+  experiencia: ExperienciaRequest;
 }
 
 export const useGuardarCurriculumCompleto = () => {
@@ -30,6 +32,10 @@ export const useGuardarCurriculumCompleto = () => {
     return await useApi.post('/api/v1/curriculum/educacion', data);
   };
 
+  const guardarExperiencia = async (data: ExperienciaRequest) => {
+    return await useApi.post('/api/v1/curriculum/educacion', data);
+  };
+
   // Mutación para guardar todo el curriculum
   const guardarCurriculumCompleto = useMutation({
     mutationFn: async (data: CurriculumData) => {
@@ -37,6 +43,7 @@ export const useGuardarCurriculumCompleto = () => {
       await guardarInfoPersonal(data.personalInfo);
       await guardarSalario(data.salario);
       await guardarEducacion(data.educacion);
+      await guardarExperiencia(data.experiencia);
     },
     onError: (error: AxiosError) => {
       const data = error.response?.data as ServerError;

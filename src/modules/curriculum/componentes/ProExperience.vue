@@ -90,6 +90,58 @@
           </div>
         </div>
 
+        <!-- Modal de Sub Áreas Laborales -->
+        <div class="mb-4">
+          <label for="areas-laboral" class="block text-gray-700 text-sm font-bold mb-2">Sub Áreas Laborales</label>
+          <div class="relative">
+            <input
+              v-model="subAreasLaborales"
+              type="text"
+              id="areas-laboral"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Selecciona o inserta la(s) área(s) laborales requeridas"
+              readonly
+            />
+            <button @click="abrirModalSubarea" class="absolute right-0 top-0 mt-2 mr-2" type="button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 text-gray-500 hover:text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Modal de Industria -->
+        <div class="mb-4">
+          <label for="areas-laboral" class="block text-gray-700 text-sm font-bold mb-2">Industria / Sector de la empresa</label>
+          <div class="relative">
+            <input
+              v-model="industriasLaborales"
+              type="text"
+              id="areas-laboral"
+              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Selecciona o inserta la(s) área(s) laborales requeridas"
+              readonly
+            />
+            <button @click="abrirModalIndustria" class="absolute right-0 top-0 mt-2 mr-2" type="button">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 text-gray-500 hover:text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <!-- Modal de selección de áreas laborales -->
         <div v-if="mostrarModal" class="fixed z-50 inset-0 overflow-y-auto">
           <div class="flex items-center justify-center min-h-screen px-4 text-center">
@@ -132,6 +184,94 @@
             </div>
           </div>
         </div>
+
+
+        <!-- Modal de selección de Sub áreas laborales -->
+        <div v-if="mostrarModalSub" class="fixed z-50 inset-0 overflow-y-auto">
+          <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="cerrarModalSubarea">
+              <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+              @click.stop
+              class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:align-middle sm:max-w-lg sm:w-full md:max-w-2xl lg:max-w-3xl"
+            >
+              <div class="bg-blue-500 text-white p-4">
+                <h3 class="text-lg font-semibold">Sub Áreas Laborales</h3>
+              </div>
+              <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="mb-4">
+                  <input v-model="buscarSubArea" type="text" placeholder="Buscar..." class="w-full p-2 border rounded-lg" />
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-60 overflow-y-auto">
+                  <label v-for="area in subAreasFiltradas" :key="area" class="inline-flex items-center">
+                    <input type="checkbox" v-model="subAreasSeleccionadas" :value="area" class="form-checkbox" />
+                    <span class="ml-2">{{ area }}</span>
+                  </label>
+                </div>
+              </div>
+              <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  @click="guardarSubAreas"
+                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Guardar
+                </button>
+                <button
+                  @click="cerrarModalSubarea"
+                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Modal de selección de Industria -->
+        <div v-if="mostrarModalIndustrias" class="fixed z-50 inset-0 overflow-y-auto">
+          <div class="flex items-center justify-center min-h-screen px-4 text-center">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="cerrarModalIndustria">
+              <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+              @click.stop
+              class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:align-middle sm:max-w-lg sm:w-full md:max-w-2xl lg:max-w-3xl"
+            >
+              <div class="bg-blue-500 text-white p-4">
+                <h3 class="text-lg font-semibold">Industria</h3>
+              </div>
+              <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="mb-4">
+                  <input v-model="buscarIndustria" type="text" placeholder="Buscar..." class="w-full p-2 border rounded-lg" />
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-60 overflow-y-auto">
+                  <label v-for="area in industriasFiltradas" :key="area" class="inline-flex items-center">
+                    <input type="checkbox" v-model="IndustriasSeleccionadas" :value="area" class="form-checkbox" />
+                    <span class="ml-2">{{ area }}</span>
+                  </label>
+                </div>
+              </div>
+              <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  @click="guardarIndustrias"
+                  class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Guardar
+                </button>
+                <button
+                  @click="cerrarModalIndustria"
+                  class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
 
       <div class="mt-4 text-center">
@@ -149,7 +289,7 @@
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <label class="inline-flex items-center">
-            <input type="checkbox" v-model="excluyenteExperiencia" value="experiencia" class="form-checkbox text-red-500" />
+            <input type="checkbox" v-model="excluyenteExperiencia" class="form-checkbox text-red-500" />
             <span class="ml-2">Experiencia</span>
           </label>
         </div>
@@ -159,39 +299,74 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch, defineEmits } from "vue";
 import { useApi } from "@/composables/use-api";
 
-// Estado principal
+// Estados principales
 const professionalExperienceActive = ref(false);
 const cargo = ref("");
 const experienceYearsDesde = ref("");
 const experienceYearsHasta = ref("");
 const excluyenteExperiencia = ref(false);
 
-// Modal de Áreas Laborales
+// Estados de los modales
 const mostrarModal = ref(false);
+const mostrarModalSub = ref(false);
+const mostrarModalIndustrias = ref(false);
+
+// Búsqueda y selección
 const buscarArea = ref("");
+const buscarSubArea = ref("");
+const buscarIndustria = ref("");
+
 const areasSeleccionadas = ref([]);
+const subAreasSeleccionadas = ref([]);
+const IndustriasSeleccionadas = ref([]);
+
+// Inputs de texto
 const areasLaborales = ref("");
+const subAreasLaborales = ref("");
+const industriasLaborales = ref("");
 
-// Abrir y cerrar modal
-const abrirModal = () => {
-  mostrarModal.value = true;
-};
-const cerrarModal = () => {
-  mostrarModal.value = false;
-};
+// Emitir datos
+const emit = defineEmits(["saveProExperience"]);
 
-// Fetch áreas laborales desde el backend
+// Métodos de los modales
+const abrirModal = () => (mostrarModal.value = true);
+const cerrarModal = () => (mostrarModal.value = false);
+
+const abrirModalSubarea = () => (mostrarModalSub.value = true);
+const cerrarModalSubarea = () => (mostrarModalSub.value = false);
+
+const abrirModalIndustria = () => (mostrarModalIndustrias.value = true);
+const cerrarModalIndustria = () => (mostrarModalIndustrias.value = false);
+
+// Datos obtenidos de la API
 const areasDisponibles = ref([]);
+const subareasDisponibles = ref([]);
+const industriasDisponibles = ref([]);
+
+// Filtrados para la búsqueda
 const areasFiltradas = computed(() => {
   if (!buscarArea.value) return areasDisponibles.value;
   return areasDisponibles.value.filter((area) =>
     area.toLowerCase().includes(buscarArea.value.toLowerCase())
   );
 });
+const subAreasFiltradas = computed(() => {
+  if (!buscarSubArea.value) return subareasDisponibles.value;
+  return subareasDisponibles.value.filter((area) =>
+    area.toLowerCase().includes(buscarSubArea.value.toLowerCase())
+  );
+});
+const industriasFiltradas = computed(() => {
+  if (!buscarIndustria.value) return industriasDisponibles.value;
+  return industriasDisponibles.value.filter((area) =>
+    area.toLowerCase().includes(buscarIndustria.value.toLowerCase())
+  );
+});
 
+// Llamadas a la API
 const fetchAreasLaborales = async () => {
   try {
     const response = await useApi.get("/api/v1/item-catalogo/AREA-LABOR");
@@ -200,17 +375,74 @@ const fetchAreasLaborales = async () => {
     console.error("Error al obtener áreas laborales:", error);
   }
 };
+const fetchSubAreasLaborales = async () => {
+  try {
+    const response = await useApi.get("/api/v1/item-catalogo/SUB-AREA-LABOR");
+    subareasDisponibles.value = response.data.map((item) => item["Item Nombre"]);
+  } catch (error) {
+    console.error("Error al obtener sub áreas laborales:", error);
+  }
+};
+const fetchIndustrias = async () => {
+  try {
+    const response = await useApi.get("/api/v1/item-catalogo/INDUST");
+    industriasDisponibles.value = response.data.map((item) => item["Item Nombre"]);
+  } catch (error) {
+    console.error("Error al obtener industrias:", error);
+  }
+};
 
+// Guardar selección
 const guardarAreas = () => {
   areasLaborales.value = areasSeleccionadas.value.join(", ");
   cerrarModal();
 };
+const guardarSubAreas = () => {
+  subAreasLaborales.value = subAreasSeleccionadas.value.join(", ");
+  cerrarModalSubarea();
+};
+const guardarIndustrias = () => {
+  industriasLaborales.value = IndustriasSeleccionadas.value.join(", ");
+  cerrarModalIndustria();
+};
 
-// Mostrar más detalles
+// Manejo de detalles de experiencia
 const mostrarDetalleExperiencia = ref(false);
 const mostrarMasExperiencia = () => {
   mostrarDetalleExperiencia.value = !mostrarDetalleExperiencia.value;
 };
 
-onMounted(fetchAreasLaborales);
+// Guardar experiencia profesional
+const guardarExperienciaProfesional = async () => {
+  const data = {
+    pcom_id: 1, // Cambiar por el ID dinámico del perfil
+    exp_cargo: cargo.value,
+    exp_anos_experiencia_desde: experienceYearsDesde.value || null,
+    exp_anos_experiencia_hasta: experienceYearsHasta.value || null,
+    exp_areas_departamentos: areasLaborales.value,
+    exp_subarea_laboral: subAreasLaborales.value,
+    exp_sector_empresa: industriasLaborales.value,
+    exp_experiencia_excluyente: excluyenteExperiencia.value ? 1 : 0,
+  };
+
+  emit("saveProExperience", data);
+  console.log("Enviando datos ...", data);
+};
+
+// Observadores para actualizaciones
+watch(
+  [cargo, experienceYearsDesde, experienceYearsHasta, areasLaborales,subAreasLaborales,industriasLaborales, excluyenteExperiencia],
+  () => {
+    guardarExperienciaProfesional();
+  },
+  { deep: true }
+);
+
+// Llamadas iniciales
+onMounted(() => {
+  fetchAreasLaborales();
+  fetchSubAreasLaborales();
+  fetchIndustrias();
+});
 </script>
+
