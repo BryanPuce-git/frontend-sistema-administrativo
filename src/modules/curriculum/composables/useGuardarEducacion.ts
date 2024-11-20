@@ -1,25 +1,22 @@
-// src/modules/curriculum/composables/useGuardarInfoPersonal.ts
+// src/modules/curriculum/composables/useGuardarEducacion.ts
 
 import { useMutation } from '@tanstack/vue-query';
-import { useApi } from '@/composables/use-api'; 
+import { useApi } from '@/composables/use-api';
 import Swal from 'sweetalert2';
 import type { AxiosError } from 'axios';
 import type { ServerError } from '../dto/serverError.dto';
-import type { SalarioRequest } from '../dto/SalarioRequest.dto';
+import type { EducacionRequest } from '../dto/EducacionResquest.dto';
 
-export const useGuardarSalario = () => {
+export const useGuardarEducacion = () => {
   const mutation = useMutation({
-    mutationFn: async (data: SalarioRequest) => {
-      console.log("Entrando a guardar salario");
-      const response = await useApi.post('/api/v1/curriculum/salario', data);
+    mutationFn: async (data: EducacionRequest) => {
+      console.log("Entrando a guardar educacion");
+      const response = await useApi.post('/api/v1/curriculum/educacion', data);
       return response.data;
     },
     onError: (error: AxiosError) => {
-      
       const data = error.response?.data as ServerError;
-      const serverMessage = data?.message || 'Ocurrió un error al guardar la información personal';
-
-     
+      const serverMessage = data?.message || 'Ocurrió un error al guardar la información educativa';
       Swal.fire({
         title: 'Error',
         text: serverMessage,
@@ -27,10 +24,9 @@ export const useGuardarSalario = () => {
       });
     },
     onSuccess: () => {
-     
       Swal.fire({
         title: 'Éxito',
-        text: 'La información personal se ha guardado correctamente',
+        text: 'La educación se ha guardado correctamente',
         icon: 'success',
       });
     },

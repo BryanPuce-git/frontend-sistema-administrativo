@@ -17,7 +17,7 @@ interface CurriculumData {
 }
 
 export const useActualizarCurriculumCompleto = () => {
-  console.log('listo para actualizar ...');
+ 
   // Función para actualizar la información personal
   const actualizarInfoPersonal = async (pcom_id: number, data: InformacionPersonalRequest) => {
     console.log("datos de personalInfo antes de actualizar ", data)

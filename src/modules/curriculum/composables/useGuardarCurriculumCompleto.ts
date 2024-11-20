@@ -19,20 +19,24 @@ interface CurriculumData {
 export const useGuardarCurriculumCompleto = () => {
   // Función para guardar la información personal
   const guardarInfoPersonal = async (data: InformacionPersonalRequest) => {
+    console.log("Entrando a guardar personalInfo");
     return await useApi.post('/api/v1/curriculum/informacion-personal', data);
   };
 
   // Función para guardar el salario
   const guardarSalario = async (data: SalarioRequest) => {
+    console.log("Entrando a guardar salario");
     return await useApi.post('/api/v1/curriculum/salario', data);
   };
 
   // Función para guardar la educación
   const guardarEducacion = async (data: EducacionRequest) => {
+    console.log("Entrando a guardar Eduacion");
     return await useApi.post('/api/v1/curriculum/educacion', data);
   };
 
   const guardarExperiencia = async (data: ExperienciaRequest) => {
+    console.log("Entrando a guardar experiencia");
     return await useApi.post('/api/v1/curriculum/educacion', data);
   };
 

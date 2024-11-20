@@ -85,7 +85,7 @@
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref } from 'vue';
-
+import Swal from 'sweetalert2';  
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import PersonalInfoSection from '@/modules/curriculum/componentes/PersonalInfoSection.vue';
 import SalarioSection from '../componentes/SalarioSection.vue';
@@ -96,10 +96,25 @@ import SkillsKnowledge from '../componentes/SkillsKnowledge.vue';
 import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
-import { useGuardarCurriculumCompleto } from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
-import { useActualizarCurriculumCompleto } from '@/modules/curriculum/composables/useActualizarCurriculumCompleto';
+import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
+import { useGuardarSalario } from '@/modules/curriculum/composables/useGuardarSalario';
+import { useGuardarEducacion } from '@/modules/curriculum/composables/useGuardarEducacion';
+import { useGuardarExperiencia } from '@/modules/curriculum/composables/useGuardarExperiencia';
+import { useActualizarInfoPersonal } from '@/modules/curriculum/composables/useActualizarInfoPersonal';
+import { useActualizarSalario } from '@/modules/curriculum/composables/useActualizarSalario';
+import { useActualizarEducacion } from '@/modules/curriculum/composables/useActualizarEducacion';
+import { useActualizarExperiencia } from '@/modules/curriculum/composables/useActualizarExperiencia';
 
-const { actualizarCurriculumCompleto } = useActualizarCurriculumCompleto();
+
+const guardarInfoPersonal = useGuardarInfoPersonal();
+const guardarSalario = useGuardarSalario();
+const guardarEducacion = useGuardarEducacion();
+const guardarExperiencia = useGuardarExperiencia();
+
+const actualizarInfoPersonal = useActualizarInfoPersonal();
+const actualizarSalario = useActualizarSalario();
+const actualizarEducacion = useActualizarEducacion();
+const actualizarExperiencia = useActualizarExperiencia();
 
 
 const router = useRouter();
@@ -114,7 +129,7 @@ const skillsData = ref(null);
 const filtersData = ref(null);
 
 const pcom_id = ref(route.params.id);
-const { guardarCurriculumCompleto } = useGuardarCurriculumCompleto();
+
 
 const openModal = () => {
   isModalOpen.value = true;
@@ -176,8 +191,18 @@ const handleSaveCurriculum = async (settings) => {
     return;
   }
 
+  // Verifica que todas las secciones necesarias estén completas
+  if (!personalInfoData.value || !salarioData.value || !educationData.value || !experienceData.value) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Por favor, complete todas las secciones antes de guardar.',
+      icon: 'error',
+      confirmButtonText: 'Entendido'
+    });
+    return;  // Salir de la función si alguna sección está vacía
+  }
+
   try {
-    // Consolidar los datos
     const data = {
       personalInfo: personalInfoData.value,
       salario: salarioData.value,
@@ -188,38 +213,52 @@ const handleSaveCurriculum = async (settings) => {
 
     console.log("Datos consolidados para guardar o actualizar:", data);
 
-    // Verificar si ya existen los datos de PersonalInfo, Salario y Educación
-    const hasPersonalInfoId = data.personalInfo?.inf_id;
-    const hasSalarioId = data.salario?.sal_id;
-    const hasEducacionId = data.educacion?.edu_id;
-    const hasExperienciaId = data.experiencia?.exp_id;
-
-    if (hasPersonalInfoId || hasSalarioId || hasEducacionId || hasExperienciaId) {
-      // Si ya existen, actualizar los datos
-      const updateData = {
-        pcom_id: Number(pcom_id.value),
-        personalInfo: data.personalInfo,
-        salario: data.salario,
-        educacion: data.educacion,
-        experiencia: data.experiencia,
-      };
-
-      console.log("Actualizando datos:", updateData);
-      await actualizarCurriculumCompleto.mutateAsync(updateData);
-      console.log("Currículum actualizado correctamente.");
+    // Código para actualizar o guardar usando mutaciones
+    if (data.personalInfo?.inf_id) {
+      console.log("Actualizando información personal...");
+      await actualizarInfoPersonal(data.personalInfo);
     } else {
-      // Si no existen, guardar los datos como nuevos
-      console.log("Creando nuevos datos:", data);
-      await guardarCurriculumCompleto.mutateAsync(data);
-      console.log("Currículum creado correctamente.");
+      console.log("Guardando nueva información personal...");
+      await guardarInfoPersonal(data.personalInfo);
     }
 
-    // Redirigir al usuario después de guardar o actualizar
+    // Similar para salario, educación y experiencia
+    if (data.salario?.sal_id) {
+      console.log("Actualizando salario...");
+      await actualizarSalario(data.salario);
+    } else {
+      console.log("Guardando nuevo salario...");
+      await guardarSalario(data.salario);
+    }
+
+    if (data.educacion?.edu_id) {
+      console.log("Actualizando educación...");
+      await actualizarEducacion(data.educacion);
+    } else {
+      console.log("Guardando nueva educación...");
+      await guardarEducacion(data.educacion);
+    }
+
+    if (data.experiencia?.exp_id) {
+      console.log("Actualizando experiencia...");
+      await actualizarExperiencia(data.experiencia);
+    } else {
+      console.log("Guardando nueva experiencia...");
+      await guardarExperiencia(data.experiencia);
+    }
+
+    console.log("Todos los datos han sido correctamente guardados o actualizados.");
     const perfilId = usePerfilId();
     const Id = perfilId.idPerfil;
     router.push(`/perfil-settings/${Id}`);
   } catch (error) {
     console.error("Error al guardar o actualizar el currículum:", error);
+    Swal.fire({
+      title: 'Error',
+      text: 'Ha ocurrido un error durante el proceso. Inténtelo de nuevo.',
+      icon: 'error',
+      confirmButtonText: 'Cerrar'
+    });
   }
 };
 

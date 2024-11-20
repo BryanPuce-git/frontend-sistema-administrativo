@@ -184,31 +184,30 @@ const emit = defineEmits(['savePersonalInfo']);
 const personalInfoActive = ref(false);
 
 
-// Rango de edad
+
 const edadDesde = ref("");
 const edadHasta = ref("");
 
-// Género (mantiene tanto el ID como el nombre)
-const generoId = ref(""); // ID del género seleccionado
-const generoNombre = ref(""); // Nombre del género seleccionado
 
-// Ciudad (mantiene tanto el ID como el nombre)
-const ciudadId = ref(""); // ID de la ciudad seleccionada
-const ciudadNombre = ref(""); // Nombre de la ciudad seleccionada
+const generoId = ref(""); 
+const generoNombre = ref(""); 
 
-// Estado Civil (mantiene tanto el ID como el nombre)
-const estadoCivilId = ref(""); // ID del estado civil seleccionado
-const estadoCivilNombre = ref(""); // Nombre del estado civil seleccionado
+const ciudadId = ref(""); 
+const ciudadNombre = ref(""); 
 
-// Capacidad de reubicación (mantiene tanto el ID como el nombre)
-const reubicacionId = ref(""); // ID de la capacidad de reubicación seleccionada
-const reubicacionNombre = ref(""); // Nombre de la capacidad de reubicación seleccionada
 
-// Discapacidad (mantiene tanto el ID como el nombre)
-const discapacidadId = ref(""); // ID de la discapacidad seleccionada
-const discapacidadNombre = ref(""); // Nombre de la discapacidad seleccionada
+const estadoCivilId = ref(""); 
+const estadoCivilNombre = ref("");
 
-// Campos excluyentes
+
+const reubicacionId = ref(""); 
+const reubicacionNombre = ref(""); 
+
+
+const discapacidadId = ref(""); 
+const discapacidadNombre = ref(""); 
+
+
 const excluyentesDesdeHasta = ref(false);
 const excluyentesEstadoCivil = ref(false);
 const excluyentesGenero = ref(false);
