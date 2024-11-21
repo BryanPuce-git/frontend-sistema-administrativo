@@ -10,7 +10,7 @@ import type { EducacionRequest } from '../dto/EducacionResquest.dto';
 export const useGuardarEducacion = () => {
   const mutation = useMutation({
     mutationFn: async (data: EducacionRequest) => {
-      console.log("Entrando a guardar educacion");
+      console.log("Entrando a guardar educacion", data);
       const response = await useApi.post('/api/v1/curriculum/educacion', data);
       return response.data;
     },

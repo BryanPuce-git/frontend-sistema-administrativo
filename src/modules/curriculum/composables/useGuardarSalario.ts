@@ -10,7 +10,7 @@ import type { SalarioRequest } from '../dto/SalarioRequest.dto';
 export const useGuardarSalario = () => {
   const mutation = useMutation({
     mutationFn: async (data: SalarioRequest) => {
-      console.log("Entrando a guardar salario");
+      console.log("Entrando a guardar salario", data);
       const response = await useApi.post('/api/v1/curriculum/salario', data);
       return response.data;
     },

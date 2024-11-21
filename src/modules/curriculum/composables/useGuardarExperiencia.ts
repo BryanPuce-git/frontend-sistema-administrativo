@@ -10,7 +10,7 @@ import type { ExperienciaRequest } from '../dto/Experiencia.dto';
 export const useGuardarExperiencia = () => {
   const mutation = useMutation({
     mutationFn: async (data: ExperienciaRequest) => {
-      console.log("Entrando a guardar experiencia");
+      console.log("Entrando a guardar experiencia", data);
       const response = await useApi.post('/api/v1/curriculum/experiencia', data);
       return response.data;
     },

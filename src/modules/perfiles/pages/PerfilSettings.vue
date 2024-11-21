@@ -85,133 +85,169 @@
 
           <div class="space-y-4 flex flex-col">
             <!-- Componente DISC -->
-            <div v-if="tieneComponente('DISC')" class="relative bg-white shadow p-4 rounded-lg flex-1">
-              <div class="flex justify-between items-center mb-2">
+            <div v-if="tieneComponente('DISC')" class="bg-white shadow-md rounded-lg overflow-hidden">
+              <!-- @click="irADisc" -->
+              <div
+                class="p-4 flex justify-between items-center bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors duration-200">
                 <h3 class="text-sm font-semibold text-gray-700">DISC</h3>
                 <div class="relative">
                   <button @click.stop="toggleMenu('DISC')"
-                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                    class="p-1 hover:bg-gray-300 rounded-full focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
                   <div v-if="menuAbierto === 'DISC'"
-                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
                     <ul>
-                      <li @click.stop="eliminarComponente('DISC')" class="p-2 hover:bg-red-100 cursor-pointer">Eliminar
+                      <li class="p-2 hover:bg-red-100 cursor-pointer" @click.stop="eliminarComponente('DISC')">Eliminar
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
-              <span class="text-green-500">Completo</span>
+              <span class="block text-center mt-2 text-green-500"> COMPLETO </span>
             </div>
 
             <!-- Componente CURRICULUM -->
-            <div v-if="tieneComponente('CURRICULUM')"
-              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
-              <div @click="irACurriculum" class="flex justify-between items-center mb-2 p-2">
+            <div v-if="tieneComponente('CURRICULUM')" class="bg-white shadow-md rounded-lg overflow-hidden">
+              <div @click="irACurriculum"
+                class="p-4 flex justify-between items-center bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors duration-200">
                 <h3 class="text-sm font-semibold text-gray-700">CURRICULUM</h3>
                 <div class="relative">
                   <button @click.stop="toggleMenu('CURRICULUM')"
-                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                    class="p-1 hover:bg-gray-300 rounded-full focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
                   <div v-if="menuAbierto === 'CURRICULUM'"
-                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
                     <ul>
-                      <li @click.stop="eliminarComponente('CURRICULUM')" class="p-2 hover:bg-red-100 cursor-pointer">
+                      <li class="p-2 hover:bg-red-100 cursor-pointer" @click.stop="eliminarComponente('CURRICULUM')">
                         Eliminar
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
-              <div class="relative">
+              <!-- Barra de progreso y porcentaje con efecto hover en todo el contenedor -->
+              <div class="px-4 py-2 bg-white hover:bg-gray-200 transition-colors duration-200">
                 <input type="range" min="0" max="100" v-model="pesoCurriculum"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-red-500" />
-                <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
-                  {{ pesoCurriculum }}%
-                </span>
+                  class="w-full h-1 bg-gray-300 rounded-lg cursor-pointer appearance-none">
+                <div class="text-center mt-2">
+                  <span class="text-xs font-semibold text-gray-600 py-1 px-3 rounded-full bg-gray-200 shadow-sm">
+                    {{ pesoCurriculum }}%
+                  </span>
+                </div>
               </div>
             </div>
 
+
             <!-- Componente CONOCIMIENTO -->
-            <div v-if="tieneComponente('CONOCIMIENTO')"
-              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
-              <div @click="irAKnowledge" class="flex justify-between items-center mb-2 p-2">
+            <div v-if="tieneComponente('CONOCIMIENTO')" class="bg-white shadow-md rounded-lg overflow-hidden">
+              <!-- Encabezado interactivo del componente -->
+              <div @click="irAKnowledge"
+                class="p-4 flex justify-between items-center bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors duration-200">
                 <h3 class="text-sm font-semibold text-gray-700">CONOCIMIENTO</h3>
                 <div class="relative">
                   <button @click.stop="toggleMenu('CONOCIMIENTO')"
-                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                    class="p-1 hover:bg-gray-300 rounded-full focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
                   <div v-if="menuAbierto === 'CONOCIMIENTO'"
-                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
                     <ul>
-                      <li @click.stop="eliminarComponente('CONOCIMIENTO')" class="p-2 hover:bg-red-100 cursor-pointer">
+                      <li class="p-2 hover:bg-red-100 cursor-pointer" @click.stop="eliminarComponente('CONOCIMIENTO')">
                         Eliminar</li>
                     </ul>
                   </div>
                 </div>
               </div>
-              <div class="relative">
+              <!-- Barra de progreso y porcentaje con efecto hover en todo el contenedor -->
+              <div class="px-4 py-2 bg-white hover:bg-gray-200 transition-colors duration-200">
                 <input type="range" min="0" max="100" v-model="pesoConocimiento"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-blue-500" />
-                <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
-                  {{ pesoConocimiento }}%
-                </span>
+                  class="w-full h-1 bg-gray-300 rounded-lg cursor-pointer appearance-none">
+                <div class="text-center mt-2">
+                  <span class="text-xs font-semibold text-gray-600 py-1 px-3 rounded-full bg-gray-200 shadow-sm">
+                    {{ pesoConocimiento }}%
+                  </span>
+                </div>
               </div>
             </div>
 
             <!-- Componente COMPETENCIAS -->
-            <div v-if="tieneComponente('COMPETENCIAS')"
-              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
-              <div @click="irACompetencia" class="flex justify-between items-center mb-2 p-2">
+            <div v-if="tieneComponente('COMPETENCIAS')" class="bg-white shadow-md rounded-lg overflow-hidden">
+              <div @click="irACompetencia"
+                class="p-4 flex justify-between items-center bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors duration-200">
                 <h3 class="text-sm font-semibold text-gray-700">COMPETENCIAS</h3>
                 <div class="relative">
                   <button @click.stop="toggleMenu('COMPETENCIAS')"
-                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                    class="p-1 hover:bg-gray-300 rounded-full focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
                   <div v-if="menuAbierto === 'COMPETENCIAS'"
-                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
                     <ul>
-                      <li @click.stop="eliminarComponente('COMPETENCIAS')" class="p-2 hover:bg-red-100 cursor-pointer">
+                      <li class="p-2 hover:bg-red-100 cursor-pointer" @click.stop="eliminarComponente('COMPETENCIAS')">
                         Eliminar</li>
                     </ul>
                   </div>
                 </div>
               </div>
-              <div class="relative">
+              <div class="px-4 py-2 bg-white hover:bg-gray-200 transition-colors duration-200">
                 <input type="range" min="0" max="100" v-model="pesoCompetencias"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-purple-500" />
-                <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-purple-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
-                  {{ pesoCompetencias }}%
-                </span>
+                  class="custom-slider w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <div class="text-center mt-2">
+                  <span class="text-xs font-semibold text-gray-600 py-1 px-3 rounded-full bg-gray-200 shadow-sm">
+                    {{ pesoCompetencias }}%
+                  </span>
+                </div>
               </div>
             </div>
 
-            <!-- Componente VIDEO ENTREVISTA -->
-            <div v-if="tieneComponente('VIDEO ENTREVISTA')"
-              class="relative bg-white shadow p-4 rounded-lg flex-1 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
-              <div @click="irAEntrevista" class="flex justify-between items-center mb-2 p-2">
+             <!-- Componente VIDEO ENTREVISTA -->
+            <div v-if="tieneComponente('VIDEO ENTREVISTA')" class="bg-white shadow-md rounded-lg overflow-hidden">
+              <div @click="irAEntrevista"
+                class="p-4 flex justify-between items-center bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors duration-200">
                 <h3 class="text-sm font-semibold text-gray-700">VIDEO ENTREVISTA</h3>
                 <div class="relative">
                   <button @click.stop="toggleMenu('VIDEO ENTREVISTA')"
-                    class="focus:outline-none hover:bg-gray-200 p-1 rounded transition duration-200">⋮</button>
+                    class="p-1 hover:bg-gray-300 rounded-full focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </button>
                   <div v-if="menuAbierto === 'VIDEO ENTREVISTA'"
-                    class="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                    class="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
                     <ul>
-                      <li @click.stop="eliminarComponente('VIDEO ENTREVISTA')"
-                        class="p-2 hover:bg-red-100 cursor-pointer">
+                      <li class="p-2 hover:bg-red-100 cursor-pointer"
+                        @click.stop="eliminarComponente('VIDEO ENTREVISTA')">
                         Eliminar</li>
                     </ul>
                   </div>
                 </div>
               </div>
-              <div class="relative">
+              <div class="px-4 py-2 bg-white hover:bg-gray-200 transition-colors duration-200">
                 <input type="range" min="0" max="100" v-model="pesoVideoEntrevista"
-                  class="w-full h-2 bg-gray-200 rounded-lg overflow-hidden appearance-none cursor-pointer accent-orange-500" />
-                <span
-                  class="absolute left-1/2 transform -translate-x-1/2 -top-6 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-md">
-                  {{ pesoVideoEntrevista }}%
-                </span>
+                  class="custom-slider w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-orange-500">
+                <div class="text-center mt-2">
+                  <span class="text-xs font-semibold text-gray-600 py-1 px-3 rounded-full bg-gray-200 shadow-sm">
+                    {{ pesoVideoEntrevista }}%
+                  </span>
+                </div>
               </div>
             </div>
+
 
             <!-- Sumatoria de Pesos -->
             <div class="bg-white shadow p-4 rounded-lg">
@@ -339,7 +375,7 @@ const agregarComponente = async (perfilId: number) => {
 };
 
 
-const asignarComponente = async (componente : Componente) => {
+const asignarComponente = async (componente: Componente) => {
   // Verifica que el componente no esté ya en la lista
   if (!componentesAsignados.value.some(c => c.id_componente === componente.id_componente)) {
     // Agrega el componente a la lista asignada

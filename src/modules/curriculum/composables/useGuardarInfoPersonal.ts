@@ -10,7 +10,7 @@ import type { InformacionPersonalRequest } from '../dto/InformacionPersonalReque
 export const useGuardarInfoPersonal = () => {
   const mutation = useMutation({
     mutationFn: async (data: InformacionPersonalRequest) => {
-      console.log("Entrando a guardar Info");
+      console.log("Entrando a guardar Info", data);
       const response = await useApi.post('/api/v1/curriculum/informacion-personal', data);
       return response.data;
     },
