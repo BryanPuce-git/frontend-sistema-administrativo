@@ -12,46 +12,46 @@ interface CurriculumData {
   personalInfo: InformacionPersonalRequest;
   salario: SalarioRequest;
   educacion: EducacionRequest;
-  experiencia: ExperienciaRequest
-  pcom_id: number; 
+  experiencia: ExperienciaRequest;
+ 
 }
 
 export const useActualizarCurriculumCompleto = () => {
- 
   // Función para actualizar la información personal
-  const actualizarInfoPersonal = async (pcom_id: number, data: InformacionPersonalRequest) => {
-    console.log("datos de personalInfo antes de actualizar ", data)
-    return await useApi.patch(`/api/v1/curriculum/informacion-personal/${pcom_id}`, data);
+  const actualizarInfoPersonal = async ( data: InformacionPersonalRequest) => {
+    console.log('datos de personalInfo antes de actualizar ', data.inf_id);
+    return await useApi.patch(`/api/v1/curriculum/informacion-personal/${data.inf_id}`, data);
   };
 
   // Función para actualizar el salario
-  const actualizarSalario = async (pcom_id: number, data: SalarioRequest) => {
-    console.log("datos de salario antes de actualizar ", data)
-    return await useApi.patch(`/api/v1/curriculum/salario/${pcom_id}`, data);
+  const actualizarSalario = async ( data: SalarioRequest) => {
+    console.log('datos de salario antes de actualizar ', data);
+    return await useApi.patch(`/api/v1/curriculum/salario/${data.sal_id}`, data);
   };
 
   // Función para actualizar la educación
-  const actualizarEducacion = async (pcom_id: number, data: EducacionRequest) => {
-    console.log("datos de educación antes de actualizar ", data)
-    return await useApi.patch(`/api/v1/curriculum/educacion/${pcom_id}`, data);
+  const actualizarEducacion = async ( data: EducacionRequest) => {
+    console.log('datos de educación antes de actualizar ', data);
+    return await useApi.patch(`/api/v1/curriculum/educacion/${data.edu_id}`, data);
   };
 
   // Función para actualizar la experiencia
-  const actualizarExperiencia = async (pcom_id: number, data: ExperienciaRequest) => {
-    console.log("datos de experiencia antes de actualizar ", data)
-    return await useApi.patch(`/api/v1/curriculum/educacion/${pcom_id}`, data);
+  const actualizarExperiencia = async ( data: ExperienciaRequest) => {
+    console.log('datos de experiencia antes de actualizar ', data);
+    return await useApi.patch(`/api/v1/curriculum/experiencia/${data.exp_id}`, data);
   };
 
   // Mutación para actualizar todo el curriculum
   const actualizarCurriculumCompleto = useMutation({
     mutationFn: async (data: CurriculumData) => {
-      const { pcom_id, personalInfo, salario, educacion, experiencia } = data;
+      const {  personalInfo, salario, educacion, experiencia } =
+        data;
 
       // Actualizar cada sección de manera secuencial
-      await actualizarInfoPersonal(pcom_id, personalInfo);
-      await actualizarSalario(pcom_id, salario);
-      await actualizarEducacion(pcom_id, educacion);
-      await actualizarExperiencia(pcom_id, experiencia);
+      await actualizarInfoPersonal( personalInfo);
+      await actualizarSalario( salario);
+      await actualizarEducacion( educacion);
+      await actualizarExperiencia(experiencia);
     },
     onError: (error: AxiosError) => {
       const data = error.response?.data as ServerError;
@@ -71,5 +71,5 @@ export const useActualizarCurriculumCompleto = () => {
     },
   });
 
-  return { actualizarCurriculumCompleto };
+  return actualizarCurriculumCompleto;
 };

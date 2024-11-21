@@ -225,6 +225,7 @@ const handleSaveCurriculum = async (settings) => {
       data.experiencia?.exp_id
     ) {
       console.log("Actualizando currículum...");
+      console.log("id de personal info ...", data.personalInfo?.inf_id);
       actualizarCurriculumCompletocAsync(data);
     } else {
       console.log("Guardando currículum...");

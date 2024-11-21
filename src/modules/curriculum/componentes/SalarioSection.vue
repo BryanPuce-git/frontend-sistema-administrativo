@@ -150,6 +150,7 @@ const obtenerSalario = async () => {
       const salarioData = response.data[0];
 
       // Asignar valores
+      
       sal_id.value = salarioData.sal_id || null;
       salarioDesde.value = salarioData.sal_desde || "";
       salarioHasta.value = salarioData.sal_hasta || "";
