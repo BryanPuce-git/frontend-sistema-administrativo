@@ -170,6 +170,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsultarCatalogo';
 import { defineProps, defineEmits } from 'vue';
 import { useApi } from '@/composables/use-api';
+import Swal from 'sweetalert2';
 
 
 const props = defineProps({
@@ -189,23 +190,23 @@ const edadDesde = ref("");
 const edadHasta = ref("");
 
 
-const generoId = ref(""); 
-const generoNombre = ref(""); 
+const generoId = ref("");
+const generoNombre = ref("");
 
-const ciudadId = ref(""); 
-const ciudadNombre = ref(""); 
+const ciudadId = ref("");
+const ciudadNombre = ref("");
 
 
-const estadoCivilId = ref(""); 
+const estadoCivilId = ref("");
 const estadoCivilNombre = ref("");
 
 
-const reubicacionId = ref(""); 
-const reubicacionNombre = ref(""); 
+const reubicacionId = ref("");
+const reubicacionNombre = ref("");
 
 
-const discapacidadId = ref(""); 
-const discapacidadNombre = ref(""); 
+const discapacidadId = ref("");
+const discapacidadNombre = ref("");
 
 
 const excluyentesDesdeHasta = ref(false);
@@ -342,7 +343,13 @@ const validarCamposExcluyentes = () => {
 
 const inf_id = ref(null);
 
+
+
 const guardarInformacionPersonal = () => {
+    console.log("Validando información personal...");
+
+   
+
     console.log("Guardando información personal...");
 
     const data = {
@@ -371,28 +378,55 @@ const guardarInformacionPersonal = () => {
 
 
 watch(
-  [
-    inf_id, // Si inf_id cambia, se puede reaccionar (por ejemplo, cuando se obtiene desde la API)
-    edadDesde,
-    edadHasta,
-    generoId,
-    estadoCivilId,
-    ciudadId,
-    reubicacionId,
-    discapacidadId,
-    excluyentesDesdeHasta,
-    excluyentesEstadoCivil,
-    excluyentesGenero,
-    excluyentesCiudad,
-    excluyentesReubicacion,
-    excluyentesDiscapacidad,
-  ],
-  () => {
-    guardarInformacionPersonal(); // Llamar al método para emitir los datos al componente principal
-  },
-  { deep: true } // Observar cambios profundos en los objetos
+    [
+        inf_id, // Si inf_id cambia, se puede reaccionar (por ejemplo, cuando se obtiene desde la API)
+        edadDesde,
+        edadHasta,
+        generoId,
+        estadoCivilId,
+        ciudadId,
+        reubicacionId,
+        discapacidadId,
+        excluyentesDesdeHasta,
+        excluyentesEstadoCivil,
+        excluyentesGenero,
+        excluyentesCiudad,
+        excluyentesReubicacion,
+        excluyentesDiscapacidad,
+    ],
+    () => {
+        guardarInformacionPersonal(); // Llamar al método para emitir los datos al componente principal
+    },
+    { deep: true } // Observar cambios profundos en los objetos
 );
 
+const debounceTimerEdad = ref(null);
+
+// Observador para evaluar edadDesde y edadHasta después de que los usuarios terminen de escribir
+watch([edadDesde, edadHasta], ([nuevoDesde, nuevoHasta], [viejoDesde, viejoHasta]) => {
+  if (debounceTimerEdad.value) {
+    clearTimeout(debounceTimerEdad.value);
+  }
+  debounceTimerEdad.value = setTimeout(() => {
+    const desdeNum = parseInt(nuevoDesde, 10);
+    const hastaNum = parseInt(nuevoHasta, 10);
+
+    // Verifica si ambos campos están llenos y son números válidos
+    if (!isNaN(desdeNum) && !isNaN(hastaNum)) {
+      if (desdeNum > hastaNum) {
+        Swal.fire({
+          title: "Error",
+          text: "La edad mínima no puede ser mayor que la edad máxima.",
+          icon: "error",
+          confirmButtonText: "Entendido"
+        });
+        // Restablece los valores a como estaban antes para corregir automáticamente
+        edadDesde.value = viejoDesde;
+        edadHasta.value = viejoHasta;
+      }
+    }
+  }, 1500); // Utiliza un retraso de 500 ms para las validaciones
+}, { deep: true });
 
 const obtenerInformacionPersonal = async () => {
     try {

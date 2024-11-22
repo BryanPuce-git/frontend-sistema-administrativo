@@ -241,6 +241,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, defineEmits } from "vue";
 import { useApi } from "@/composables/use-api";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   id: {
@@ -386,6 +387,55 @@ watch(
   { deep: true }
 );
 
+
+
+
+// Observa los cambios en los campos relacionados con la experiencia
+watch(
+  [experienceYearsDesde, experienceYearsHasta, cargo],
+  ([desde, hasta, cargoActual]) => {
+    // Asegúrate de que ambos campos estén llenos antes de comparar
+    if (desde && hasta && desde > hasta) {
+      Swal.fire({
+        title: "Error",
+        text: "El número mínimo de años de experiencia no puede ser mayor que el número máximo.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+      });
+      // Opcionalmente, podrías borrar el valor incorrecto aquí
+      experienceYearsDesde.value = null; // Limpia el valor de "Desde" si es mayor
+      return;
+    }
+
+    if ((desde !== null && desde < 0) || (hasta !== null && hasta < 0)) {
+      Swal.fire({
+        title: "Error",
+        text: "Los años de experiencia no pueden ser valores negativos.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+      });
+      // Limpia los valores inválidos
+      if (desde < 0) experienceYearsDesde.value = null;
+      if (hasta < 0) experienceYearsHasta.value = null;
+      return;
+    }
+
+    if (!cargoActual) {
+      Swal.fire({
+        title: "Error",
+        text: "El campo 'Nombre del cargo' es obligatorio.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+      });
+      // Mantén el campo cargo limpio para asegurarte de que el usuario lo llene
+      cargo.value = null;
+    }
+  },
+  { deep: true } // Monitorea cambios profundos en los objetos si es necesario
+);
+
+
+
 const exp_id = ref(null);
 
 const obtenerDatosExperiencia = async () => {
@@ -404,6 +454,19 @@ const obtenerDatosExperiencia = async () => {
       subAreasLaborales.value = data.exp_subarea_laboral || null;
       industriasLaborales.value = data.exp_sector_empresa || null;
       excluyenteExperiencia.value = data.exp_experiencia_excluyente === 1;
+
+      // Sincroniza las áreas seleccionadas
+      areasSeleccionadas.value = data.exp_areas_departamentos
+        ? data.exp_areas_departamentos.split(", ").map((area) => area.trim())
+        : [];
+
+      subAreasSeleccionadas.value = data.exp_subarea_laboral
+        ? data.exp_subarea_laboral.split(", ").map((area) => area.trim())
+        : [];
+
+      IndustriasSeleccionadas.value = data.exp_sector_empresa
+        ? data.exp_sector_empresa.split(", ").map((area) => area.trim())
+        : [];
 
       console.log("Datos de Experiencia después de asignar:", {
         exp_cargo: cargo.value,

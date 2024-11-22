@@ -272,6 +272,10 @@ const obtenerEducacion = async () => {
       institucionEducativa.value = educacionData.edu_institucion_educativa || "";
       excluyente.value = educacionData.edu_educacion_excluyente === 1;
 
+      areasSeleccionadas.value = educacionData.edu_area_estudios
+        ? educacionData.edu_area_estudios.split(", ").map(area => area.trim())
+        : [];
+
       console.log("Datos de Educación después de asignar:", {
         edu_id: edu_id.value,
         nivelEstudios: nivelEstudios.value,

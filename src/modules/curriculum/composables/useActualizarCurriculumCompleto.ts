@@ -13,52 +13,66 @@ interface CurriculumData {
   salario: SalarioRequest;
   educacion: EducacionRequest;
   experiencia: ExperienciaRequest;
- 
 }
 
 export const useActualizarCurriculumCompleto = () => {
-  // Función para actualizar la información personal
-  const actualizarInfoPersonal = async ( data: InformacionPersonalRequest) => {
-    console.log('datos de personalInfo antes de actualizar ', data.inf_id);
-    return await useApi.patch(`/api/v1/curriculum/informacion-personal/${data.inf_id}`, data);
+  const handleError = (error: AxiosError, section: string) => {
+    const serverData = error.response?.data as ServerError;
+    const errorMessage = serverData?.message || `Error al actualizar ${section}`;
+    Swal.fire({
+      title: 'Error de actualización',
+      text: errorMessage,
+      icon: 'error',
+    });
   };
 
-  // Función para actualizar el salario
-  const actualizarSalario = async ( data: SalarioRequest) => {
-    console.log('datos de salario antes de actualizar ', data);
-    return await useApi.patch(`/api/v1/curriculum/salario/${data.sal_id}`, data);
+  const actualizarInfoPersonal = async (data: InformacionPersonalRequest) => {
+    try {
+      return await useApi.patch(`/api/v1/curriculum/informacion-personal/${data.inf_id}`, data);
+    } catch (error) {
+      handleError(error as AxiosError, 'la información personal');
+      throw error;  // Re-throw para manejar en el proceso global
+    }
   };
 
-  // Función para actualizar la educación
-  const actualizarEducacion = async ( data: EducacionRequest) => {
-    console.log('datos de educación antes de actualizar ', data);
-    return await useApi.patch(`/api/v1/curriculum/educacion/${data.edu_id}`, data);
+  const actualizarSalario = async (data: SalarioRequest) => {
+    try {
+      return await useApi.patch(`/api/v1/curriculum/salario/${data.sal_id}`, data);
+    } catch (error) {
+      handleError(error as AxiosError, 'el salario');
+      throw error;
+    }
   };
 
-  // Función para actualizar la experiencia
-  const actualizarExperiencia = async ( data: ExperienciaRequest) => {
-    console.log('datos de experiencia antes de actualizar ', data);
-    return await useApi.patch(`/api/v1/curriculum/experiencia/${data.exp_id}`, data);
+  const actualizarEducacion = async (data: EducacionRequest) => {
+    try {
+      return await useApi.patch(`/api/v1/curriculum/educacion/${data.edu_id}`, data);
+    } catch (error) {
+      handleError(error as AxiosError, 'la educación');
+      throw error;
+    }
   };
 
-  // Mutación para actualizar todo el curriculum
+  const actualizarExperiencia = async (data: ExperienciaRequest) => {
+    try {
+      return await useApi.patch(`/api/v1/curriculum/experiencia/${data.exp_id}`, data);
+    } catch (error) {
+      handleError(error as AxiosError, 'la experiencia');
+      throw error;
+    }
+  };
+
   const actualizarCurriculumCompleto = useMutation({
     mutationFn: async (data: CurriculumData) => {
-      const {  personalInfo, salario, educacion, experiencia } =
-        data;
-
-      // Actualizar cada sección de manera secuencial
-      await actualizarInfoPersonal( personalInfo);
-      await actualizarSalario( salario);
-      await actualizarEducacion( educacion);
-      await actualizarExperiencia(experiencia);
+      await actualizarInfoPersonal(data.personalInfo);
+      await actualizarSalario(data.salario);
+      await actualizarEducacion(data.educacion);
+      await actualizarExperiencia(data.experiencia);
     },
     onError: (error: AxiosError) => {
-      const data = error.response?.data as ServerError;
-      const serverMessage = data?.message || 'Ocurrió un error al actualizar el curriculum';
       Swal.fire({
-        title: 'Error',
-        text: serverMessage,
+        title: 'Error Global',
+        text: 'Ocurrió un error general al actualizar el curriculum.',
         icon: 'error',
       });
     },
