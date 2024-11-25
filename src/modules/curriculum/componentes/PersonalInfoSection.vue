@@ -259,7 +259,7 @@ watch(discapacidadId, (newId) => {
 
 
 
-
+ 
 const consultarcatalogo = useConsultarCatalogo();
 
 const fetchEstadoCivilOptions = async () => {

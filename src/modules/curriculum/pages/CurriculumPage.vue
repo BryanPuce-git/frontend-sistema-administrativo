@@ -58,7 +58,7 @@
           <SalarioSection :id="Number(pcom_id)" @saveSalario="handleSalarioSave" />
           <EducationSection :id="Number(pcom_id)" @saveEducation="handleEducationSave" />
           <ProExperience :id="Number(pcom_id)" @saveProExperience="handleProExperienceSave" />
-          <LanguageSection @saveLanguages="handleLanguagesSave" />
+          <LanguageSection :id="Number(pcom_id)" @saveLanguages="handleLanguagesSave" />
           <SkillsKnowledge @saveSkills="handleSkillsSave" />
           <FilterQuestionsSection @saveFilters="handleFiltersSave" />
 
