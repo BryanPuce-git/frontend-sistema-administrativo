@@ -143,22 +143,21 @@ const guardarSalario = () => {
 
 watch([salarioDesde, salarioHasta, moneda, excluyente], guardarSalario, { deep: true });
 
-const debounceTimer = ref(null);
+const debounceTimerSalario = ref(null);
 
-watch([salarioDesde, salarioHasta], ([desde, hasta], [oldDesde, oldHasta]) => {
-  // Limpiar el temporizador existente para asegurar que no se ejecuten validaciones prematuras
-  if (debounceTimer.value) {
-    clearTimeout(debounceTimer.value);
+watch([salarioDesde, salarioHasta], ([nuevoDesde, nuevoHasta], [viejoDesde, viejoHasta]) => {
+  // Cancelar cualquier temporizador existente para evitar ejecuciones prematuras
+  if (debounceTimerSalario.value) {
+    clearTimeout(debounceTimerSalario.value);
   }
 
-  // Establecer un nuevo temporizador
-  debounceTimer.value = setTimeout(() => {
-    // Solo realiza la validación cuando ambos campos están completos y no están vacíos
-    if (desde && hasta) {
-      const desdeNum = parseFloat(desde);
-      const hastaNum = parseFloat(hasta);
+  debounceTimerSalario.value = setTimeout(() => {
+    // Convertir valores de entrada a números para hacer la validación
+    const desdeNum = parseFloat(nuevoDesde);
+    const hastaNum = parseFloat(nuevoHasta);
 
-      // Asegurarse de que ambos números sean válidos y que 'desde' no sea mayor que 'hasta'
+    // Validar solo si ambos campos están llenos y son números válidos
+    if (!isNaN(desdeNum) && !isNaN(hastaNum)) {
       if (desdeNum > hastaNum) {
         Swal.fire({
           title: "Error",
@@ -166,17 +165,29 @@ watch([salarioDesde, salarioHasta], ([desde, hasta], [oldDesde, oldHasta]) => {
           icon: "error",
           confirmButtonText: "Entendido"
         });
-      } else if (desdeNum < 0 || hastaNum < 0) {
-        Swal.fire({
-          title: "Error",
-          text: "El salario no puede ser un valor negativo.",
-          icon: "error",
-          confirmButtonText: "Entendido"
-        });
+
+        // Borrar el valor de 'salarioDesde' y 'salarioHasta' automáticamente
+
+        salarioHasta.value = null;
       }
+    }
+
+    else if (desdeNum < 0 || hastaNum < 0) {
+      Swal.fire({
+        title: "Error",
+        text: "Los años de experiencia no pueden ser valores negativos.",
+        icon: "error",
+        confirmButtonText: "Entendido"
+      });
+
+      if (desdeNum < 0) salarioDesde.value = null;
+      if (hastaNum < 0) salarioHasta.value = null;
     }
   }, 1500);  // Ajusta el tiempo de retardo según sea necesario
 }, { deep: true });
+
+
+
 
 
 

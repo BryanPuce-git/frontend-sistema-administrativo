@@ -425,7 +425,19 @@ watch([edadDesde, edadHasta], ([nuevoDesde, nuevoHasta], [viejoDesde, viejoHasta
         edadHasta.value = viejoHasta;
       }
     }
-  }, 1500); // Utiliza un retraso de 500 ms para las validaciones
+    else if (desdeNum < 0 || hastaNum < 0) {
+      Swal.fire({
+        title: "Error",
+        text: "Los años de experiencia no pueden ser valores negativos.",
+        icon: "error",
+        confirmButtonText: "Entendido"
+      });
+
+      if (desdeNum < 0) edadDesde.value = null;
+      if (hastaNum < 0) edadHasta.value = null;
+    }
+
+  }, 1000); // Utiliza un retraso de 500 ms para las validaciones
 }, { deep: true });
 
 const obtenerInformacionPersonal = async () => {

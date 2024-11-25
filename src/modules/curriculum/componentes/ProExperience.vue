@@ -388,51 +388,64 @@ watch(
 );
 
 
+const debounceTimerExp = ref(null);
 
+watch([experienceYearsDesde, experienceYearsHasta, cargo], ([nuevoDesde, nuevoHasta, nuevoCargo], [viejoDesde, viejoHasta, viejoCargo]) => {
+  // Limpiar el temporizador existente para asegurar que no se ejecuten validaciones prematuras
+  if (debounceTimerExp.value) {
+    clearTimeout(debounceTimerExp.value);
+  }
 
-// Observa los cambios en los campos relacionados con la experiencia
-watch(
-  [experienceYearsDesde, experienceYearsHasta, cargo],
-  ([desde, hasta, cargoActual]) => {
-    // Asegúrate de que ambos campos estén llenos antes de comparar
-    if (desde && hasta && desde > hasta) {
-      Swal.fire({
-        title: "Error",
-        text: "El número mínimo de años de experiencia no puede ser mayor que el número máximo.",
-        icon: "error",
-        confirmButtonText: "Entendido",
-      });
-      // Opcionalmente, podrías borrar el valor incorrecto aquí
-      experienceYearsDesde.value = null; // Limpia el valor de "Desde" si es mayor
-      return;
+  debounceTimerExp.value = setTimeout(() => {
+    // Convertir los valores de entrada a números para validaciones
+    const desdeNum = parseInt(nuevoDesde, 10);
+    const hastaNum = parseInt(nuevoHasta, 10);
+
+    // Validar si ambos campos están llenos y son números válidos
+    if (!isNaN(desdeNum) && !isNaN(hastaNum)) {
+      if (desdeNum > hastaNum) {
+        Swal.fire({
+          title: "Error",
+          text: "El número mínimo de años de experiencia no puede ser mayor que el número máximo.",
+          icon: "error",
+          confirmButtonText: "Entendido"
+        });
+
+        // Borrar los valores previos para corregir automáticamente
+        
+        experienceYearsHasta.value = null;
+      }
     }
 
-    if ((desde !== null && desde < 0) || (hasta !== null && hasta < 0)) {
+    if (desdeNum < 0 || hastaNum < 0) {
       Swal.fire({
         title: "Error",
         text: "Los años de experiencia no pueden ser valores negativos.",
         icon: "error",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Entendido"
       });
-      // Limpia los valores inválidos
-      if (desde < 0) experienceYearsDesde.value = null;
-      if (hasta < 0) experienceYearsHasta.value = null;
-      return;
+
+      // Borrar los valores negativos
+      if (desdeNum < 0) experienceYearsDesde.value = null;
+      if (hastaNum < 0) experienceYearsHasta.value = null;
     }
 
-    if (!cargoActual) {
+    if (!nuevoCargo) {
       Swal.fire({
         title: "Error",
         text: "El campo 'Nombre del cargo' es obligatorio.",
         icon: "error",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Entendido"
       });
-      // Mantén el campo cargo limpio para asegurarte de que el usuario lo llene
+
+      // Borrar el campo de cargo si está vacío para que el usuario lo llene
       cargo.value = null;
     }
-  },
-  { deep: true } // Monitorea cambios profundos en los objetos si es necesario
-);
+  }, 1500);  // Ajusta el tiempo de retardo según sea necesario
+}, { deep: true });
+
+
+
 
 
 
