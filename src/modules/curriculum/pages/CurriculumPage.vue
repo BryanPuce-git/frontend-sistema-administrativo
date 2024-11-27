@@ -59,7 +59,7 @@
           <EducationSection :id="Number(pcom_id)" @saveEducation="handleEducationSave" />
           <ProExperience :id="Number(pcom_id)" @saveProExperience="handleProExperienceSave" />
           <LanguageSection :id="Number(pcom_id)" @saveLanguages="handleLanguagesSave" />
-          <SkillsKnowledge @saveSkills="handleSkillsSave" />
+          <SkillsKnowledge :id="Number(pcom_id)" @saveSkills="handleSkillsSave" />
           <FilterQuestionsSection @saveFilters="handleFiltersSave" />
 
         </div>

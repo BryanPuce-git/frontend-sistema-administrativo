@@ -23,12 +23,13 @@
       <p class="text-sm text-gray-600 mb-4">Agrega o edita los idiomas requeridos por el cargo.</p>
 
       <!-- Lista de idiomas seleccionados con opciones para editar -->
-      <div v-if="idiomas.length > 0" class="mb-4">
-        <div v-for="idioma in idiomas" :key="idioma.idi_id" class="grid grid-cols-4 gap-4 items-center mb-2">
+      <div v-if="idiomas.length > 0" class="mb-4 flex flex-col items-center">
+        <div v-for="idioma in idiomas" :key="idioma.idi_id"
+          class="flex items-center justify-between w-full max-w-2xl gap-6 mb-4">
           <!-- Selección de idioma -->
-          <div>
+          <div class="flex-1">
             <select v-model="idioma.idi_idioma"
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               @change="actualizarIdioma(idioma)">
               <option value="" disabled>Seleccione</option>
               <option v-for="item in idiomasOptions" :key="item.Id" :value="item.Id">
@@ -37,9 +38,9 @@
             </select>
           </div>
           <!-- Selección de nivel -->
-          <div>
+          <div class="flex-1">
             <select v-model="idioma.idi_nivel"
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               @change="actualizarIdioma(idioma)">
               <option value="" disabled>Seleccione</option>
               <option v-for="item in estadoIdiomasOptions" :key="item.Id" :value="item.Id">
@@ -48,14 +49,16 @@
             </select>
           </div>
           <!-- Botón para eliminar -->
-          <button @click="eliminarIdioma(idioma.idi_id)" class="text-gray-500 hover:text-red-600" type="button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+          <button @click="eliminarIdioma(idioma.idi_id)"
+            class="p-2 text-gray-500 hover:text-red-600 bg-gray-100 rounded-full" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </div>
+
 
       <!-- Botón para agregar nuevo idioma -->
       <div v-if="!mostrarCampos" class="text-center">
@@ -111,7 +114,8 @@
             del proceso.</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <label class="inline-flex items-center">
-              <input type="checkbox" v-model="todosExcluyentes" @change="actualizarTodosExcluyentes" class="form-checkbox text-red-500">
+              <input type="checkbox" v-model="todosExcluyentes" @change="actualizarTodosExcluyentes"
+                class="form-checkbox text-red-500">
               <span class="ml-2">Idioma</span>
             </label>
           </div>
@@ -171,7 +175,7 @@ const obtenerIdiomas = async () => {
       idi_id: item.idi_id,
       idi_idioma: item.idi_idioma,
       idi_nivel: item.idi_nivel,
-      excluyente: item.idi_idioma_excluyente === 1, 
+      excluyente: item.idi_idioma_excluyente === 1,
     }));
     todosExcluyentes.value = idiomas.value.every(idioma => idioma.excluyente);
   } catch (error) {
