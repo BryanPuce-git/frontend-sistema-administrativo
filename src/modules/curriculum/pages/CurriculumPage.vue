@@ -60,7 +60,7 @@
           <ProExperience :id="Number(pcom_id)" @saveProExperience="handleProExperienceSave" />
           <LanguageSection :id="Number(pcom_id)" @saveLanguages="handleLanguagesSave" />
           <SkillsKnowledge :id="Number(pcom_id)" @saveSkills="handleSkillsSave" />
-          <FilterQuestionsSection @saveFilters="handleFiltersSave" />
+          <FilterQuestionsSection :id="Number(pcom_id)" @saveFilters="handleFiltersSave" />
 
         </div>
       </div>
@@ -96,27 +96,10 @@ import SkillsKnowledge from '../componentes/SkillsKnowledge.vue';
 import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
-// import { useGuardarInfoPersonal } from '@/modules/curriculum/composables/useGuardarInfoPersonal';
-// import { useGuardarSalario } from '@/modules/curriculum/composables/useGuardarSalario';
-// import { useGuardarEducacion } from '@/modules/curriculum/composables/useGuardarEducacion';
-// import { useGuardarExperiencia } from '@/modules/curriculum/composables/useGuardarExperiencia';
-// import { useActualizarInfoPersonal } from '@/modules/curriculum/composables/useActualizarInfoPersonal';
-// import { useActualizarSalario } from '@/modules/curriculum/composables/useActualizarSalario';
-// import { useActualizarEducacion } from '@/modules/curriculum/composables/useActualizarEducacion';
-// import { useActualizarExperiencia } from '@/modules/curriculum/composables/useActualizarExperiencia';
 import { useGuardarCurriculumCompleto} from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
 import { useActualizarCurriculumCompleto} from '@/modules/curriculum/composables/useActualizarCurriculumCompleto';
 
 
-// const guardarInfoPersonal = useGuardarInfoPersonal();
-// const guardarSalario = useGuardarSalario();
-// const guardarEducacion = useGuardarEducacion();
-// const guardarExperiencia = useGuardarExperiencia();
-
-// const actualizarInfoPersonal = useActualizarInfoPersonal();
-// const actualizarSalario = useActualizarSalario();
-// const actualizarEducacion = useActualizarEducacion();
-// const actualizarExperiencia = useActualizarExperiencia();
 
 const guardarCurriculumCompleto = useGuardarCurriculumCompleto();
 const actualizarCurriculumCompleto = useActualizarCurriculumCompleto();
@@ -130,7 +113,7 @@ const educationData = ref(null);
 const experienceData = ref(null);
 const languageData = ref(null);
 const skillsData = ref(null);
-const filtersData = ref(null);
+
 
 const pcom_id = ref(route.params.id);
 
@@ -177,9 +160,17 @@ const handleSkillsSave = (data) => {
   skillsData.value = data;
 };
 
-const handleFiltersSave = (data) => {
-  filtersData.value = data;
+const filtersData = ref([]);
+
+const handleFiltersSave = (preguntas) => {
+  filtersData.value = preguntas.map((pregunta) => ({
+    pcom_id: Number(pcom_id.value), 
+    prg_tipo_pregunta: pregunta.tipo,
+    prg_pregunta_predeterminada: pregunta.predeterminada ? 1 : 0,
+  }));
+  console.log('Datos de preguntas filtro guardados localmente:', filtersData.value);
 };
+
 
 const handleSaveCurriculum = async (settings) => {
   console.log("Configuración recibida para guardar:", settings);

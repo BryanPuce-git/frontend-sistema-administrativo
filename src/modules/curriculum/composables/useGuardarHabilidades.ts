@@ -22,13 +22,13 @@ export const useGuardarHabilidades= () => {
         icon: 'error',
       });
     },
-    onSuccess: () => {
-      Swal.fire({
-        title: 'Éxito',
-        text: 'La Habilidad se ha guardado correctamente',
-        icon: 'success',
-      });
-    },
+    // onSuccess: () => {
+    //   Swal.fire({
+    //     title: 'Éxito',
+    //     text: 'La Habilidad se ha guardado correctamente',
+    //     icon: 'success',
+    //   });
+    // },
   });
 
   return mutation;

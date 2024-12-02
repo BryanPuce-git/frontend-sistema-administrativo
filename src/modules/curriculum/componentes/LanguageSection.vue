@@ -131,7 +131,7 @@ import { useConsultarCatalogo } from '@/modules/curriculum/composables/useConsul
 import { defineProps } from 'vue';
 import { useApi } from '@/composables/use-api';
 
-// Props
+
 const props = defineProps({
   id: {
     type: Number,

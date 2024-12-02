@@ -111,7 +111,7 @@ const agregarHabilidad = async () => {
       });
 
       nuevaHabilidad.value = '';
-      noHabilidades.value = false; // Oculta el mensaje si se agrega una habilidad
+      noHabilidades.value = false;
     } catch (error) {
       console.error('Error al guardar habilidad:', error);
     }
@@ -175,7 +175,7 @@ const actualizarExcluyentes = async () => {
       })
     );
 
-    Swal.fire('Éxito', 'Las habilidades se han actualizado correctamente.', 'success');
+  
   } catch (error) {
     console.error('Error al actualizar excluyentes:', error);
   }
