@@ -47,10 +47,13 @@
 
           <!-- Mostrar campos específicos según el tipo de pregunta -->
           <div v-if="pregunta.tipoSeleccionado" class="bg-gray-50 p-4 rounded-b-lg shadow-inner">
-            <div v-if="pregunta.tipoNombre === 'Abierta'">
+            <div
+              v-if="pregunta.tipoNombre === 'Abierta' || pregunta.tipoNombre === 'Predeterminada' || pregunta.tipoNombre === 'Archivo'">
               <input v-model="pregunta.texto" type="text"
                 class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Escribe la pregunta abierta" />
+                :placeholder="pregunta.tipoNombre === 'Abierta' ? 'Escribe la pregunta abierta' :
+                  pregunta.tipoNombre === 'Predeterminada' ? 'Selecciona o escribe la pregunta predeterminada' :
+                    pregunta.tipoNombre === 'Archivo' ? 'Escriba aquí' : ''" />
             </div>
 
             <div v-if="pregunta.tipoNombre === 'Cerrada'" class="space-y-2">
@@ -70,6 +73,9 @@
                   </svg>
                 </button>
               </div>
+              <button @click="agregarRespuesta(index)" class="text-blue-500 hover:text-blue-700">
+                + Agregar opción
+              </button>
               <div class="flex items-center mt-2">
                 <input type="checkbox" v-model="pregunta.excluyente" class="mr-2">
                 <label class="text-sm text-gray-600">Pregunta excluyente</label>
@@ -97,14 +103,13 @@
               {{ pregunta.pregunta }}
             </li>
           </ul>
-
-
         </div>
       </div>
 
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -119,10 +124,8 @@ const props = defineProps({
   },
 });
 
-const mostrarModal = ref(false); // Estado para el modal
+const mostrarModal = ref(false);
 const preguntasPredeterminadas = ref([]);
-const preguntaSeleccionada = ref(null);
-
 const preguntasFiltroActive = ref(false);
 const preguntas = ref([]);
 const tiposPreguntas = ref([]);
@@ -131,43 +134,37 @@ const crearPreguntaFiltro = useCrearPreguntaFiltro();
 const obtenerPreguntasPredeterminadas = useObtenerPreguntasPredeterminadas();
 const currentIndex = ref(null); // Índice de la pregunta actual que está siendo configurada
 
-
 const fetchPreguntasFiltro = async () => {
-  try {
-    const response = await obtenerPreguntasFiltro.mutateAsync('PREG');
-    tiposPreguntas.value = response.map((pregunta) => ({
-      id: pregunta.Id,
-      nombre: pregunta['Item Nombre'],
-    }));
-
-    console.log('Tipos de preguntas', tiposPreguntas.value);
-  } catch (error) {
-    console.error('Error al obtener tipos de preguntas:', error);
-  }
+  const response = await obtenerPreguntasFiltro.mutateAsync('PREG');
+  tiposPreguntas.value = response.map(pregunta => ({
+    id: pregunta.Id,
+    nombre: pregunta['Item Nombre'],
+  }));
 };
 
 const cargarPreguntasPredeterminadas = async () => {
-  try {
-    const preguntas = await obtenerPreguntasPredeterminadas.mutateAsync();
-    preguntasPredeterminadas.value = preguntas;
-    mostrarModal.value = true; // Mostrar el sidebar
-  } catch (error) {
-    console.error('Error al cargar preguntas predeterminadas:', error);
-  }
+  const preguntas = await obtenerPreguntasPredeterminadas.mutateAsync();
+  preguntasPredeterminadas.value = preguntas;
+  mostrarModal.value = true;
 };
 
 const seleccionarPreguntaPredeterminada = (pregunta) => {
-  // Encuentra la primera pregunta con tipo "Predeterminada" para asignarle la pregunta seleccionada
-  const index = preguntas.value.findIndex((p) => p.tipoNombre === 'Predeterminada' && !p.texto);
-  if (index !== -1) {
-    preguntas.value[index].texto = pregunta.pregunta; // Actualiza el texto de la pregunta
-    preguntas.value[index].id = pregunta.prg_id; // Guarda el ID de la pregunta predeterminada
+  if (currentIndex.value !== null) {
+    preguntas.value[currentIndex.value].texto = pregunta.pregunta; // Actualiza el texto de la pregunta predeterminada
+    preguntas.value[currentIndex.value].id = pregunta.prg_id; // Establece el ID
     mostrarModal.value = false; // Cierra el modal
+  } else {
+    preguntas.value.push({
+      id: pregunta.prg_id,
+      tipo: '',
+      texto: pregunta.pregunta,
+      tipoSeleccionado: true,
+      respuestas: [],
+      excluyente: false,
+      tipoNombre: 'Predeterminada',
+    });
   }
 };
-
-
-
 
 const agregarPregunta = () => {
   preguntas.value.push({
@@ -186,49 +183,41 @@ const eliminarPregunta = (index) => {
 };
 
 const seleccionarTipo = async (index) => {
-  try {
-    const pregunta = preguntas.value[index];
-    const tipoSeleccionado = tiposPreguntas.value.find((tipo) => tipo.id === pregunta.tipo);
+  const pregunta = preguntas.value[index];
+  const tipoSeleccionado = tiposPreguntas.value.find(tipo => tipo.id === pregunta.tipo);
 
-    if (!tipoSeleccionado) {
-      console.error('Tipo de pregunta no encontrado.');
-      return;
+  if (!tipoSeleccionado) {
+    console.error('Tipo de pregunta no encontrado.');
+    return;
+  }
+
+  pregunta.tipoSeleccionado = true;
+  pregunta.tipoNombre = tipoSeleccionado.nombre;
+  pregunta.texto = ""; // Asegúrate de que siempre haya un campo de texto visible
+
+  if (pregunta.tipoNombre === 'Predeterminada') {
+    currentIndex.value = index;
+    await cargarPreguntasPredeterminadas();
+  } else {
+    const dataInicial = {
+      pcom_id: props.id,
+      prg_tipo_pregunta: tipoSeleccionado.id,
+      prg_pregunta_predeterminada: 0,
+    };
+
+    const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
+    if (response.data && response.data.id) {
+      pregunta.id = response.data.id;
     }
 
-    pregunta.tipoSeleccionado = true;
-    pregunta.tipoNombre = tipoSeleccionado.nombre;
-
-    if (pregunta.tipoNombre === 'Predeterminada') {
-      currentIndex.value = index; // Almacena el índice actual
-      await cargarPreguntasPredeterminadas(); // Carga las preguntas predeterminadas y muestra el modal
-    } else {
-      const dataInicial = {
-        pcom_id: props.id,
-        prg_tipo_pregunta: tipoSeleccionado.id,
-        prg_pregunta_predeterminada: 0, // No es predeterminada
-      };
-
-      const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
-      console.log('Configuración inicial de la pregunta guardada:', response);
-
-      if (pregunta.tipoNombre === 'Cerrada') {
-        pregunta.respuestas = [{ texto: '' }, { texto: '' }];
-      } else if (pregunta.tipoNombre === 'Abierta') {
-        // Configuración adicional para preguntas abiertas
-      } else if (pregunta.tipoNombre === 'Archivo') {
-        pregunta.direccionArchivo = '';
-      }
-
-      if (response.data && response.data.id) {
-        pregunta.id = response.data.id;
-      }
+    if (pregunta.tipoNombre === 'Cerrada') {
+      pregunta.respuestas = [{ texto: '' }];
+      pregunta.excluyente = false;
+    } else if (pregunta.tipoNombre === 'Abierta' || pregunta.tipoNombre === 'Archivo') {
+      // No se necesita configuración especial para preguntas abiertas o de archivo
     }
-  } catch (error) {
-    console.error('Error al configurar el tipo de pregunta:', error);
   }
 };
-
-
 
 const agregarRespuesta = (index) => {
   preguntas.value[index].respuestas.push({ texto: '' });
@@ -238,7 +227,5 @@ const eliminarRespuesta = (pIndex, rIndex) => {
   preguntas.value[pIndex].respuestas.splice(rIndex, 1);
 };
 
-onMounted(() => {
-  fetchPreguntasFiltro();
-});
+onMounted(fetchPreguntasFiltro);
 </script>
