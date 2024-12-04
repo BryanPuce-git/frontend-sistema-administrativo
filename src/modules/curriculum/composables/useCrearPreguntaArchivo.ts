@@ -3,10 +3,11 @@ import { useApi } from '@/composables/use-api';
 import Swal from 'sweetalert2';
 import type { AxiosError } from 'axios';
 import type { ServerError } from '../dto/serverError.dto';
+import type { PreguntaArchivoRequest } from '../dto/PreguntaArchivoRequest.dto';
 
 export const useCrearPreguntaArchivo = () => {
     const mutation = useMutation({
-      mutationFn: async (data) => {
+      mutationFn: async (data : PreguntaArchivoRequest) => {
         console.log('Enviando datos de pregunta de archivo:', data);
         return await useApi.post('/api/v1/curriculum/preguntas/archivo', data);
       },

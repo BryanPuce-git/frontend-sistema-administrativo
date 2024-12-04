@@ -70,20 +70,10 @@
                   </svg>
                 </button>
               </div>
-              <button @click="agregarRespuesta(index)" type="button"
-                class="text-blue-500 hover:text-blue-700 mt-2 w-full flex items-center justify-center p-2 border border-dashed border-blue-500 rounded-lg">
-                + Agregar opción
-              </button>
               <div class="flex items-center mt-2">
                 <input type="checkbox" v-model="pregunta.excluyente" class="mr-2">
                 <label class="text-sm text-gray-600">Pregunta excluyente</label>
               </div>
-            </div>
-
-            <div v-if="pregunta.tipoNombre === 'Archivo'">
-              <input v-model="pregunta.texto" type="text"
-                class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Escribe la pregunta sobre el archivo" />
             </div>
           </div>
         </div>
@@ -95,6 +85,23 @@
         class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
         + Agregar pregunta
       </button>
+
+      <div v-if="mostrarModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-end z-50">
+        <!-- Sidebar -->
+        <div class="bg-white w-72 h-full shadow-lg transform transition-transform duration-300 ease-in-out p-4">
+          <h3 class="text-lg font-bold text-gray-800 mb-4">Preguntas Predeterminadas</h3>
+          <ul class="space-y-2 max-h-[70vh] overflow-y-auto">
+            <li v-for="pregunta in preguntasPredeterminadas" :key="pregunta.prg_id"
+              @click="seleccionarPreguntaPredeterminada(pregunta)"
+              class="p-2 bg-gray-100 rounded cursor-pointer hover:bg-blue-100">
+              {{ pregunta.pregunta }}
+            </li>
+          </ul>
+
+
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -103,6 +110,7 @@
 import { ref, onMounted } from 'vue';
 import { useObtenerPreguntasFiltro } from '@/modules/curriculum/composables/useObtenerPreguntasFiltro';
 import { useCrearPreguntaFiltro } from '@/modules/curriculum/composables/useCrearPreguntaFiltro';
+import { useObtenerPreguntasPredeterminadas } from '@/modules/curriculum/composables/useObtenerPreguntasPredeterminadas';
 
 const props = defineProps({
   id: {
@@ -111,25 +119,55 @@ const props = defineProps({
   },
 });
 
+const mostrarModal = ref(false); // Estado para el modal
+const preguntasPredeterminadas = ref([]);
+const preguntaSeleccionada = ref(null);
+
 const preguntasFiltroActive = ref(false);
 const preguntas = ref([]);
 const tiposPreguntas = ref([]);
 const obtenerPreguntasFiltro = useObtenerPreguntasFiltro();
 const crearPreguntaFiltro = useCrearPreguntaFiltro();
+const obtenerPreguntasPredeterminadas = useObtenerPreguntasPredeterminadas();
+const currentIndex = ref(null); // Índice de la pregunta actual que está siendo configurada
+
 
 const fetchPreguntasFiltro = async () => {
   try {
     const response = await obtenerPreguntasFiltro.mutateAsync('PREG');
-    tiposPreguntas.value = response.map(pregunta => ({
+    tiposPreguntas.value = response.map((pregunta) => ({
       id: pregunta.Id,
       nombre: pregunta['Item Nombre'],
     }));
 
-    console.log("Tipos de preguntas", tiposPreguntas.value)
+    console.log('Tipos de preguntas', tiposPreguntas.value);
   } catch (error) {
     console.error('Error al obtener tipos de preguntas:', error);
   }
 };
+
+const cargarPreguntasPredeterminadas = async () => {
+  try {
+    const preguntas = await obtenerPreguntasPredeterminadas.mutateAsync();
+    preguntasPredeterminadas.value = preguntas;
+    mostrarModal.value = true; // Mostrar el sidebar
+  } catch (error) {
+    console.error('Error al cargar preguntas predeterminadas:', error);
+  }
+};
+
+const seleccionarPreguntaPredeterminada = (pregunta) => {
+  // Encuentra la primera pregunta con tipo "Predeterminada" para asignarle la pregunta seleccionada
+  const index = preguntas.value.findIndex((p) => p.tipoNombre === 'Predeterminada' && !p.texto);
+  if (index !== -1) {
+    preguntas.value[index].texto = pregunta.pregunta; // Actualiza el texto de la pregunta
+    preguntas.value[index].id = pregunta.prg_id; // Guarda el ID de la pregunta predeterminada
+    mostrarModal.value = false; // Cierra el modal
+  }
+};
+
+
+
 
 const agregarPregunta = () => {
   preguntas.value.push({
@@ -143,7 +181,7 @@ const agregarPregunta = () => {
   });
 };
 
-const eliminarPregunta = index => {
+const eliminarPregunta = (index) => {
   preguntas.value.splice(index, 1);
 };
 
@@ -152,43 +190,47 @@ const seleccionarTipo = async (index) => {
     const pregunta = preguntas.value[index];
     const tipoSeleccionado = tiposPreguntas.value.find((tipo) => tipo.id === pregunta.tipo);
 
-    if (tipoSeleccionado) {
-      pregunta.tipoSeleccionado = true;
-      pregunta.tipoNombre = tipoSeleccionado.nombre;
+    if (!tipoSeleccionado) {
+      console.error('Tipo de pregunta no encontrado.');
+      return;
+    }
 
-      if (pregunta.tipoNombre === 'Cerrada') {
-        pregunta.respuestas = [{ texto: 'Sí' }, { texto: 'No' }];
-      }
+    pregunta.tipoSeleccionado = true;
+    pregunta.tipoNombre = tipoSeleccionado.nombre;
 
-      // Prepara los datos según el tipo de pregunta
-      const data = {
-        prg_id: props.id,
-        prg_pregunta: pregunta.texto,
-        ...(pregunta.tipoNombre === 'Cerrada' && {
-          prg_opcion: pregunta.respuestas.map((resp) => resp.texto).join(' / '),
-          prg_seleccion: 1,
-          prg_pregunta_excluyente: pregunta.excluyente ? 1 : 0,
-        }),
-        ...(pregunta.tipoNombre === 'Archivo' && {
-          prh_direccion: 'localhost', // Puedes agregar lógica para la dirección del archivo.
-          prh_pregunta_excluyente: pregunta.excluyente ? 1 : 0,
-        }),
+    if (pregunta.tipoNombre === 'Predeterminada') {
+      currentIndex.value = index; // Almacena el índice actual
+      await cargarPreguntasPredeterminadas(); // Carga las preguntas predeterminadas y muestra el modal
+    } else {
+      const dataInicial = {
+        pcom_id: props.id,
+        prg_tipo_pregunta: tipoSeleccionado.id,
+        prg_pregunta_predeterminada: 0, // No es predeterminada
       };
 
-      // Envía los datos al backend
-      const response = await crearPreguntaFiltro.mutateAsync(data);
-      console.log('Pregunta creada exitosamente:', response);
+      const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
+      console.log('Configuración inicial de la pregunta guardada:', response);
 
-      // Actualiza el ID de la pregunta en la lista (si el backend devuelve uno)
-      pregunta.id = response.id;
+      if (pregunta.tipoNombre === 'Cerrada') {
+        pregunta.respuestas = [{ texto: '' }, { texto: '' }];
+      } else if (pregunta.tipoNombre === 'Abierta') {
+        // Configuración adicional para preguntas abiertas
+      } else if (pregunta.tipoNombre === 'Archivo') {
+        pregunta.direccionArchivo = '';
+      }
+
+      if (response.data && response.data.id) {
+        pregunta.id = response.data.id;
+      }
     }
   } catch (error) {
-    console.error('Error al enviar la pregunta:', error);
+    console.error('Error al configurar el tipo de pregunta:', error);
   }
 };
 
 
-const agregarRespuesta = index => {
+
+const agregarRespuesta = (index) => {
   preguntas.value[index].respuestas.push({ texto: '' });
 };
 
