@@ -85,7 +85,7 @@
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
 import { ref } from 'vue';
-import Swal from 'sweetalert2';  
+import Swal from 'sweetalert2';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import PersonalInfoSection from '@/modules/curriculum/componentes/PersonalInfoSection.vue';
 import SalarioSection from '../componentes/SalarioSection.vue';
@@ -96,8 +96,8 @@ import SkillsKnowledge from '../componentes/SkillsKnowledge.vue';
 import FilterQuestionsSection from '../componentes/FilterQuestionsSection.vue';
 import AdvancedConfigModal from '../componentes/AdvancedConfigModal.vue';
 import { usePerfilId } from '@/stores/use-perfil-Id.store';
-import { useGuardarCurriculumCompleto} from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
-import { useActualizarCurriculumCompleto} from '@/modules/curriculum/composables/useActualizarCurriculumCompleto';
+import { useGuardarCurriculumCompleto } from '@/modules/curriculum/composables/useGuardarCurriculumCompleto';
+import { useActualizarCurriculumCompleto } from '@/modules/curriculum/composables/useActualizarCurriculumCompleto';
 
 
 
@@ -163,13 +163,25 @@ const handleSkillsSave = (data) => {
 const filtersData = ref([]);
 
 const handleFiltersSave = (preguntas) => {
+  if (!Array.isArray(preguntas)) {
+    console.error("Se esperaba un array de preguntas, recibido:", preguntas);
+    return; // Salir de la función si no es un array
+  }
+
   filtersData.value = preguntas.map((pregunta) => ({
-    pcom_id: Number(pcom_id.value), 
+    id: pregunta.id,  // Asegura que cada pregunta emitida tenga un id
+    pcom_id: Number(pcom_id.value),
     prg_tipo_pregunta: pregunta.tipo,
     prg_pregunta_predeterminada: pregunta.predeterminada ? 1 : 0,
+    prg_texto: pregunta.texto, // Captura el texto de cada pregunta
   }));
   console.log('Datos de preguntas filtro guardados localmente:', filtersData.value);
 };
+
+
+
+
+
 
 
 const handleSaveCurriculum = async (settings) => {
@@ -197,30 +209,31 @@ const handleSaveCurriculum = async (settings) => {
     return;  // Salir de la función si alguna sección está vacía
   }
 
+  // Prepara los datos de preguntas para la verificación de ID
+  const preguntasConId = filtersData.value.filter(pregunta => pregunta.prg_id != null);
+  const tieneIdsDePreguntas = preguntasConId.length > 0;
+
   try {
     const data = {
       personalInfo: personalInfoData.value,
       salario: salarioData.value,
       educacion: educationData.value,
       experiencia: experienceData.value,
+      preguntasAbiertas: filtersData.value.filter(p => p.tipo === 'abierta'),
+      preguntasCerradas: filtersData.value.filter(p => p.tipo === 'cerrada'),
+      preguntasArchivo: filtersData.value.filter(p => p.tipo === 'archivo'),
       config: settings,
     };
 
     console.log("Datos consolidados para guardar o actualizar:", data);
 
     // Evaluar si se actualiza o se guarda según los IDs
-    if (
-      data.personalInfo?.inf_id ||
-      data.salario?.sal_id ||
-      data.educacion?.edu_id ||
-      data.experiencia?.exp_id
-    ) {
+    if (data.personalInfo?.inf_id || data.salario?.sal_id || data.educacion?.edu_id || data.experiencia?.exp_id || tieneIdsDePreguntas) {
       console.log("Actualizando currículum...");
-      console.log("id de personal info ...", data.personalInfo?.inf_id);
-      actualizarCurriculumCompletocAsync(data);
+      await actualizarCurriculumCompletocAsync(data);
     } else {
       console.log("Guardando currículum...");
-      guardarCurriculumCompletoAsync(data);
+      await guardarCurriculumCompletoAsync(data);
     }
 
     console.log("Todos los datos han sido correctamente guardados o actualizados.");
@@ -237,6 +250,7 @@ const handleSaveCurriculum = async (settings) => {
     });
   }
 };
+
 
 const guardarCurriculumCompletoAsync = async (data) => {
   await guardarCurriculumCompleto.mutateAsync(data);

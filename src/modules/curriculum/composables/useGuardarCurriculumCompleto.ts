@@ -7,66 +7,67 @@ import type { InformacionPersonalRequest } from '../dto/InformacionPersonalReque
 import type { SalarioRequest } from '../dto/SalarioRequest.dto';
 import type { EducacionRequest } from '../dto/EducacionResquest.dto';
 import type { ExperienciaRequest } from '../dto/Experiencia.dto';
-// import type { PreguntaFiltroRequest } from '../dto/PreguntaFiltroRequest.dto'; // Define este tipo según tu backend
+import type { PreguntaAbiertaRequest } from '../dto/PreguntaAbiertaRequest.dto';
+import type { PreguntaCerradaRequest } from '../dto/PreguntaCerradaRequest.dto';
+import type { PreguntaArchivoRequest } from '../dto/PreguntaArchivoRequest.dto';
 
 interface CurriculumData {
   personalInfo: InformacionPersonalRequest;
   salario: SalarioRequest;
   educacion: EducacionRequest;
   experiencia: ExperienciaRequest;
-  // preguntasFiltro: PreguntaFiltroRequest[]; // Nuevo campo
+  preguntasAbiertas: PreguntaAbiertaRequest[];
+  preguntasCerradas: PreguntaCerradaRequest[];
+  preguntasArchivo: PreguntaArchivoRequest[];
 }
 
 export const useGuardarCurriculumCompleto = () => {
-  // Función para guardar preguntas filtro
-  // const guardarPreguntasFiltro = async (preguntas: PreguntaFiltroRequest[]) => {
-  //   console.log('Guardando preguntas filtro:', preguntas);
-  //   for (const pregunta of preguntas) {
-  //     await useApi.post('/api/v1/curriculum/preguntas', pregunta);
-  //   }
-  // };
-
-  // Función para guardar la información personal
   const guardarInfoPersonal = async (data: InformacionPersonalRequest) => {
-    console.log('Entrando a guardar personalInfo', data);
     return await useApi.post('/api/v1/curriculum/informacion-personal', data);
   };
 
-  // Función para guardar el salario
   const guardarSalario = async (data: SalarioRequest) => {
-    console.log('Entrando a guardar salario', data);
     return await useApi.post('/api/v1/curriculum/salario', data);
   };
 
-  // Función para guardar la educación
   const guardarEducacion = async (data: EducacionRequest) => {
-    console.log('Entrando a guardar educación', data);
     return await useApi.post('/api/v1/curriculum/educacion', data);
   };
 
-  // Función para guardar la experiencia
   const guardarExperiencia = async (data: ExperienciaRequest) => {
-    console.log('Entrando a guardar experiencia', data);
     return await useApi.post('/api/v1/curriculum/experiencia', data);
   };
 
-  // Mutación para guardar todo el currículum
+  const guardarPreguntasAbiertas = async (preguntas: PreguntaAbiertaRequest[]) => {
+    for (const pregunta of preguntas) {
+      await useApi.post('/api/v1/curriculum/preguntas/abiertas', pregunta);
+    }
+  };
+
+  const guardarPreguntasCerradas = async (preguntas: PreguntaCerradaRequest[]) => {
+    for (const pregunta of preguntas) {
+      await useApi.post('/api/v1/curriculum/preguntas/cerradas', pregunta);
+    }
+  };
+
+  const guardarPreguntasArchivo = async (preguntas: PreguntaArchivoRequest[]) => {
+    for (const pregunta of preguntas) {
+      await useApi.post('/api/v1/curriculum/preguntas/archivo', pregunta);
+    }
+  };
+
   const guardarCurriculumCompleto = useMutation({
     mutationFn: async (data: CurriculumData) => {
-      // Guardar cada sección de manera secuencial
       await guardarInfoPersonal(data.personalInfo);
       await guardarSalario(data.salario);
       await guardarEducacion(data.educacion);
       await guardarExperiencia(data.experiencia);
-
-      // Guardar preguntas filtro
-      // if (data.preguntasFiltro && data.preguntasFiltro.length > 0) {
-      //   await guardarPreguntasFiltro(data.preguntasFiltro);
-      // }
+      await guardarPreguntasAbiertas(data.preguntasAbiertas);
+      await guardarPreguntasCerradas(data.preguntasCerradas);
+      await guardarPreguntasArchivo(data.preguntasArchivo);
     },
-    onError: (error: AxiosError) => {
-      const data = error.response?.data as ServerError;
-      const serverMessage = data?.message || 'Ocurrió un error al guardar el currículum';
+    onError: (error: AxiosError<ServerError>) => {
+      const serverMessage = error.response?.data.message || 'Ocurrió un error al guardar el currículum';
       Swal.fire({
         title: 'Error',
         text: serverMessage,

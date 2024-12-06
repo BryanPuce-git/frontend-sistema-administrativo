@@ -1,9 +1,7 @@
-// DTO para una pregunta de archivo
+// PreguntaArchivoRequest.dto.ts
 export interface PreguntaArchivoRequest {
-    prg_id: number;  // ID de la pregunta
-    prh_pregunta: string;  // Texto de la pregunta
-    prh_direccion_archivo: string;  // Ruta o dirección del archivo
-    prh_pregunta_excluyente: number;  // Indicador si la pregunta es excluyente (1: sí, 0: no)
-  }
-
-  
+  prg_id: number;           // ID de la pregunta
+  prh_pregunta: string;     // Texto de la pregunta que pide un archivo
+  prh_direccion: string;    // Dirección o ruta donde se almacenará el archivo
+  prh_pregunta_excluyente: number;  // Indica si la pregunta es excluyente (1 para sí, 0 para no)
+}

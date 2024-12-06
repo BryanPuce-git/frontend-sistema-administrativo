@@ -73,9 +73,10 @@
                   </svg>
                 </button>
               </div>
-              <button @click="agregarRespuesta(index)" class="text-blue-500 hover:text-blue-700">
+              <button @click="agregarRespuesta(index)" type="button" class="text-blue-500 hover:text-blue-700">
                 + Agregar opción
               </button>
+
               <div class="flex items-center mt-2">
                 <input type="checkbox" v-model="pregunta.excluyente" class="mr-2">
                 <label class="text-sm text-gray-600">Pregunta excluyente</label>
@@ -87,10 +88,15 @@
       <div v-else class="text-center text-gray-500">No hay preguntas disponibles.</div>
 
       <!-- Botón para agregar una nueva pregunta -->
-      <button @click="agregarPregunta" type="button"
-        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-        + Agregar pregunta
-      </button>
+      <!-- Contenedor externo con flex y justificación al centro -->
+      <div class="flex justify-center">
+        <button @click="agregarPregunta" type="button"
+          class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-2 py-2 bg-blue-500  font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          + Agregar pregunta
+        </button>
+      </div>
+
+
 
       <div v-if="mostrarModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-end z-50">
         <!-- Sidebar -->
@@ -112,10 +118,12 @@
 
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineEmits } from 'vue';
 import { useObtenerPreguntasFiltro } from '@/modules/curriculum/composables/useObtenerPreguntasFiltro';
 import { useCrearPreguntaFiltro } from '@/modules/curriculum/composables/useCrearPreguntaFiltro';
 import { useObtenerPreguntasPredeterminadas } from '@/modules/curriculum/composables/useObtenerPreguntasPredeterminadas';
+import { watch } from 'vue';
+import { useApi } from '@/composables/use-api';
 
 const props = defineProps({
   id: {
@@ -123,6 +131,9 @@ const props = defineProps({
     required: true,
   },
 });
+
+const emit = defineEmits(['saveFilters']);
+
 
 const mostrarModal = ref(false);
 const preguntasPredeterminadas = ref([]);
@@ -133,6 +144,36 @@ const obtenerPreguntasFiltro = useObtenerPreguntasFiltro();
 const crearPreguntaFiltro = useCrearPreguntaFiltro();
 const obtenerPreguntasPredeterminadas = useObtenerPreguntasPredeterminadas();
 const currentIndex = ref(null); // Índice de la pregunta actual que está siendo configurada
+
+const cargarPreguntasExistentes = async () => {
+  try {
+    const response = await useApi.get(`/api/v1/curriculum/preguntas/${props.id}`);
+    const preguntasData = Array.isArray(response) ? response : response.data || [];
+
+    if (!Array.isArray(preguntasData)) {
+      console.error("La respuesta no contiene un arreglo válido:", response);
+      return;
+    }
+
+    preguntas.value = preguntasData.map((pregunta) => ({
+      id: pregunta.prg_id,
+      tipo: pregunta.prg_tipo_pregunta,
+      texto: pregunta.prg_texto || "",
+      tipoSeleccionado: true,
+      respuestas: [],
+      excluyente: pregunta.prg_pregunta_excluyente === 1,
+      tipoNombre: pregunta.tipo_pregunta,
+      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0, // Asegura predeterminada
+    }));
+
+    console.log("Preguntas cargadas:", preguntas.value);
+  } catch (error) {
+    console.error("Error al cargar preguntas existentes:", error);
+  }
+};
+
+
+
 
 const fetchPreguntasFiltro = async () => {
   const response = await obtenerPreguntasFiltro.mutateAsync('PREG');
@@ -149,22 +190,52 @@ const cargarPreguntasPredeterminadas = async () => {
 };
 
 const seleccionarPreguntaPredeterminada = (pregunta) => {
-  if (currentIndex.value !== null) {
-    preguntas.value[currentIndex.value].texto = pregunta.pregunta; // Actualiza el texto de la pregunta predeterminada
-    preguntas.value[currentIndex.value].id = pregunta.prg_id; // Establece el ID
-    mostrarModal.value = false; // Cierra el modal
+  if (currentIndex.value !== null && preguntas.value[currentIndex.value]) {
+    const preguntaActual = preguntas.value[currentIndex.value];
+    preguntaActual.texto = pregunta.pregunta;
+    preguntaActual.id = pregunta.prg_id;
+    preguntaActual.tipo = pregunta.prg_tipo_pregunta;
+    preguntaActual.pcom_id = props.id;
+    preguntaActual.prg_pregunta_predeterminada = 1;
+    preguntaActual.tipoNombre = "Predeterminada";
+    mostrarModal.value = false;
+
+    // Enviar al backend la nueva pregunta predeterminada
+    const dataInicial = {
+      pcom_id: props.id,
+      prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
+      prg_pregunta_predeterminada: 1, // Marcamos como predeterminada
+    };
+
+    crearPreguntaFiltro
+      .mutateAsync(dataInicial)
+      .then((response) => {
+        if (response.data && response.data.id) {
+          preguntaActual.id = response.data.id; // Asigna el ID desde el backend
+          console.log("Pregunta predeterminada creada correctamente:", response.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error al crear la pregunta predeterminada:", error);
+      });
   } else {
     preguntas.value.push({
       id: pregunta.prg_id,
-      tipo: '',
+      tipo: pregunta.prg_tipo_pregunta,
       texto: pregunta.pregunta,
       tipoSeleccionado: true,
       respuestas: [],
       excluyente: false,
-      tipoNombre: 'Predeterminada',
+      tipoNombre: "Predeterminada",
+      prg_pregunta_predeterminada: 1,
+      pcom_id: props.id,
     });
+
+    console.log("Pregunta predeterminada agregada y actualizada:", preguntas.value);
   }
 };
+
+
 
 const agregarPregunta = () => {
   preguntas.value.push({
@@ -184,48 +255,160 @@ const eliminarPregunta = (index) => {
 
 const seleccionarTipo = async (index) => {
   const pregunta = preguntas.value[index];
-  const tipoSeleccionado = tiposPreguntas.value.find(tipo => tipo.id === pregunta.tipo);
+  const tipoSeleccionado = tiposPreguntas.value.find((tipo) => tipo.id === pregunta.tipo);
 
   if (!tipoSeleccionado) {
-    console.error('Tipo de pregunta no encontrado.');
+    console.error("Tipo de pregunta no encontrado.");
     return;
   }
 
+  // Configuración básica de la pregunta
   pregunta.tipoSeleccionado = true;
   pregunta.tipoNombre = tipoSeleccionado.nombre;
   pregunta.texto = ""; // Asegúrate de que siempre haya un campo de texto visible
 
-  if (pregunta.tipoNombre === 'Predeterminada') {
+  if (pregunta.tipoNombre === "Predeterminada") {
+    // Manejo de preguntas predeterminadas
     currentIndex.value = index;
-    await cargarPreguntasPredeterminadas();
-  } else {
+    await cargarPreguntasPredeterminadas(); // Abrimos el modal para seleccionar predeterminada
+    pregunta.prg_pregunta_predeterminada = 1; // Marca como predeterminada
+
+    // Si es predeterminada, aseguramos que vaya al backend
     const dataInicial = {
       pcom_id: props.id,
       prg_tipo_pregunta: tipoSeleccionado.id,
-      prg_pregunta_predeterminada: 0,
+      prg_pregunta_predeterminada: 1, // Marcamos como predeterminada
     };
 
-    const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
-    if (response.data && response.data.id) {
-      pregunta.id = response.data.id;
-    }
+    try {
+      const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
 
-    if (pregunta.tipoNombre === 'Cerrada') {
-      pregunta.respuestas = [{ texto: '' }];
-      pregunta.excluyente = false;
-    } else if (pregunta.tipoNombre === 'Abierta' || pregunta.tipoNombre === 'Archivo') {
-      // No se necesita configuración especial para preguntas abiertas o de archivo
+      if (response.data && response.data.id) {
+        pregunta.id = response.data.id; // Actualizamos solo el ID de la pregunta recién creada
+        console.log("Pregunta predeterminada creada correctamente:", response.data);
+      } else {
+        console.warn("El servidor no devolvió un ID para la pregunta creada.");
+      }
+    } catch (error) {
+      console.error("Error al crear la pregunta predeterminada:", error);
+    }
+  } else {
+    // Manejo de preguntas no predeterminadas
+    const dataInicial = {
+      pcom_id: props.id,
+      prg_tipo_pregunta: tipoSeleccionado.id,
+      prg_pregunta_predeterminada: 0, // No es predeterminada
+    };
+
+    try {
+      const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
+
+      if (response.data && response.data.id) {
+        pregunta.id = response.data.id; // Actualizamos solo el ID de la pregunta recién creada
+        console.log("Pregunta creada correctamente:", response.data);
+      } else {
+        console.warn(
+          "El servidor no devolvió un ID para la pregunta creada. Buscando la última pregunta creada..."
+        );
+
+        const nuevasPreguntas = await useApi.get(`/api/v1/curriculum/preguntas/${props.id}`);
+        const ultimaPregunta = nuevasPreguntas.data.find(
+          (p) =>
+            p.prg_tipo_pregunta === tipoSeleccionado.id &&
+            !preguntas.value.some((preg) => preg.id === p.prg_id)
+        );
+
+        if (ultimaPregunta) {
+          pregunta.id = ultimaPregunta.prg_id; // Sincroniza el ID
+          pregunta.prg_pregunta_predeterminada = 0; // Sincronizamos como no predeterminada
+          console.log("ID sincronizado desde el backend:", ultimaPregunta);
+        }
+      }
+    } catch (error) {
+      console.error("Error al crear la pregunta:", error);
     }
   }
+
+  // Configuración de atributos adicionales según el tipo de pregunta
+  if (pregunta.tipoNombre === "Cerrada") {
+    // Configuración de preguntas cerradas con opciones iniciales
+    pregunta.respuestas = [{ texto: "Sí" }, { texto: "No" }];
+    pregunta.excluyente = false; // Inicialización adicional si aplica
+    console.log("Pregunta cerrada configurada con respuestas iniciales:", pregunta);
+  } else if (pregunta.tipoNombre === "Abierta" || pregunta.tipoNombre === "Archivo") {
+    console.log("Pregunta abierta o archivo configurada:", pregunta);
+  }
+
+  // Verifica y muestra el estado actualizado de la pregunta
+  console.log("Pregunta después de seleccionar tipo:", pregunta);
 };
 
+
+
+
+// Métodos para agregar y eliminar respuestas
 const agregarRespuesta = (index) => {
-  preguntas.value[index].respuestas.push({ texto: '' });
+  preguntas.value[index].respuestas.push({ texto: "" });
+  console.log("Respuesta agregada:", preguntas.value[index].respuestas);
 };
 
 const eliminarRespuesta = (pIndex, rIndex) => {
   preguntas.value[pIndex].respuestas.splice(rIndex, 1);
+  console.log("Respuesta eliminada:", preguntas.value[pIndex].respuestas);
 };
 
-onMounted(fetchPreguntasFiltro);
+
+
+watch(
+  preguntas,
+  (newVal) => {
+    // Separar las preguntas por tipo para procesarlas correctamente
+    const preguntasAbiertas = [];
+    const preguntasCerradas = [];
+    const preguntasArchivo = [];
+    
+
+    for (const pregunta of newVal) {
+      const basePregunta = {
+        id: pregunta.id,
+        pcom_id: props.id,
+        prg_tipo_pregunta: pregunta.tipo,
+        prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
+        prg_texto: pregunta.texto,
+      };
+
+      if (pregunta.tipoNombre === "Abierta") {
+        preguntasAbiertas.push(basePregunta);
+      } else if (pregunta.tipoNombre === "Cerrada") {
+        preguntasCerradas.push({
+          ...basePregunta,
+          respuestas: pregunta.respuestas || [], // Asegúrate de capturar las respuestas
+          excluyente: pregunta.excluyente || false, // Captura si es excluyente
+        });
+      } else if (pregunta.tipoNombre === "Archivo") {
+        preguntasArchivo.push(basePregunta);
+      }
+    }
+
+    console.log("Preguntas abiertas:", preguntasAbiertas);
+    console.log("Preguntas cerradas:", preguntasCerradas);
+    console.log("Preguntas archivo:", preguntasArchivo);
+
+    // Emitimos los cambios procesados
+    emit("saveFilters", {
+      preguntasAbiertas,
+      preguntasCerradas,
+      preguntasArchivo,
+    });
+  },
+  { deep: true } // Observa cambios profundos
+);
+
+
+
+
+onMounted(() => {
+  fetchPreguntasFiltro();
+  cargarPreguntasExistentes();
+});
 </script>
