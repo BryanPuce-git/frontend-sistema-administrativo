@@ -57,31 +57,40 @@
             </div>
 
             <div v-if="pregunta.tipoNombre === 'Cerrada'" class="space-y-2">
+              <!-- Input para ingresar el texto de la pregunta cerrada -->
               <input v-model="pregunta.texto" type="text"
                 class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Escribe la pregunta cerrada" />
-              <div v-for="(respuesta, rIndex) in pregunta.respuestas" :key="rIndex"
-                class="flex items-center bg-white p-2 rounded-lg shadow-sm">
-                <input v-model="respuesta.texto" type="text"
-                  class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Escribe una opción" />
-                <button @click="eliminarRespuesta(index, rIndex)" type="button"
-                  class="text-gray-500 hover:text-red-600 ml-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+
+              <!-- Lista de opciones con radio buttons -->
+              <div class="mt-2">
+                <div v-for="(respuesta, rIndex) in pregunta.respuestas" :key="rIndex"
+                  class="flex items-center space-x-3 mb-2">
+                  <input type="radio" v-model="pregunta.seleccionada" :value="respuesta.texto"
+                    class="form-radio text-blue-600 focus:ring-blue-500">
+                  <input v-model="respuesta.texto" type="text"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Escribe una opción" />
+                  <button @click="eliminarRespuesta(index, rIndex)" type="button"
+                    class="text-red-500 hover:text-red-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <button @click="agregarRespuesta(index)" type="button" class="text-blue-500 hover:text-blue-700">
+                  + Agregar opción
                 </button>
               </div>
-              <button @click="agregarRespuesta(index)" type="button" class="text-blue-500 hover:text-blue-700">
-                + Agregar opción
-              </button>
 
+              <!-- Checkbox para marcar si la pregunta es excluyente -->
               <div class="flex items-center mt-2">
                 <input type="checkbox" v-model="pregunta.excluyente" class="mr-2">
                 <label class="text-sm text-gray-600">Pregunta excluyente</label>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -189,8 +198,8 @@ const cargarPreguntasPorPerfilExistentes = async () => {
       texto: pregunta.pregunta,
       tipoSeleccionado: true,
       respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
-      excluyente: pregunta.seleccion === 1, // Esto puede necesitar ajuste basado en cómo manejas las respuestas excluyentes
-      tipoNombre: pregunta.tipo_pregunta, // Esto asume que tienes una manera de mapear prg_tipo_pregunta a un string descriptivo
+      excluyente: pregunta.seleccion === 0, 
+      tipoNombre: pregunta.tipo_pregunta, 
       prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
     }));
 
@@ -218,7 +227,7 @@ const cargarPreguntasPredeterminadas = async () => {
 
 const seleccionarPreguntaPredeterminada = (pregunta) => {
   if (currentIndex.value !== null && preguntas.value[currentIndex.value]) {
-    let preguntaActual = {...preguntas.value[currentIndex.value]};
+    let preguntaActual = { ...preguntas.value[currentIndex.value] };
     preguntaActual.texto = pregunta.pregunta;
     preguntaActual.id = pregunta.prg_id;
     preguntaActual.tipo = pregunta.prg_tipo_pregunta;
@@ -411,7 +420,19 @@ watch(
   { deep: true }
 );
 
-
+const cargarDatos = async () => {
+  if (!preguntasCargadas.value) {
+    try {
+      // Cargar preguntas del perfil primero
+      await cargarPreguntasPorPerfilExistentes();
+      // Después cargar cualquier otra pregunta necesaria
+      await cargarPreguntasExistentes();
+      preguntasCargadas.value = true;
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    }
+  }
+};
 
 
 
@@ -419,5 +440,6 @@ onMounted(() => {
   fetchPreguntasFiltro();
   cargarPreguntasExistentes();
   cargarPreguntasPorPerfilExistentes();
+  cargarDatos();
 });
 </script>
