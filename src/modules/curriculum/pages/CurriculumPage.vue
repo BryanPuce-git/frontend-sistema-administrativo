@@ -84,7 +84,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useRoute } from 'vue-router';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Swal from 'sweetalert2';
 import DashboardLayout from '@/modules/dashboard/layouts/DashboardLayout.vue';
 import PersonalInfoSection from '@/modules/curriculum/componentes/PersonalInfoSection.vue';
@@ -113,6 +113,10 @@ const educationData = ref(null);
 const experienceData = ref(null);
 const languageData = ref(null);
 const skillsData = ref(null);
+const preguntasPredeterminadasPreparadas = ref([]);
+const preguntasArchivoPreparadas = ref([]);
+const preguntasCerradasPreparadas = ref([]);
+const preguntasAbiertasPreparadas = ref([]);
 
 
 const pcom_id = ref(route.params.id);
@@ -160,27 +164,53 @@ const handleSkillsSave = (data) => {
   skillsData.value = data;
 };
 
-const filtersData = ref([]);
 
-const handleFiltersSave = (preguntas) => {
-  if (!Array.isArray(preguntas)) {
-    console.error("Se esperaba un array de preguntas, recibido:", preguntas);
-    return; // Salir de la función si no es un array
+
+
+const handleFiltersSave = (data) => {
+  if (!data || typeof data !== 'object') {
+    console.error("Se esperaba un objeto con arrays de preguntas, recibido:", data);
+    return;
   }
 
-  filtersData.value = preguntas.map((pregunta) => ({
-    id: pregunta.id,  // Asegura que cada pregunta emitida tenga un id
-    pcom_id: Number(pcom_id.value),
-    prg_tipo_pregunta: pregunta.tipo,
-    prg_pregunta_predeterminada: pregunta.predeterminada ? 1 : 0,
-    prg_texto: pregunta.texto, // Captura el texto de cada pregunta
+  const { preguntasAbiertas, preguntasCerradas, preguntasArchivo, preguntasPredeterminadas } = data;
+
+  preguntasAbiertasPreparadas.value = preguntasAbiertas.map(pregunta => ({
+    prg_id: pregunta.id,
+    pra_pregunta: pregunta.prg_texto,
+    pra_respuesta: "A partir de las 07:00 a.m., etc." // Aquí necesitarías definir cómo obtienes la respuesta, por ejemplo
   }));
-  console.log('Datos de preguntas filtro guardados localmente:', filtersData.value);
+
+  preguntasCerradasPreparadas.value = preguntasCerradas.map(pregunta => ({
+    prg_id: pregunta.id,
+    prc_pregunta: pregunta.prg_texto,
+    prc_opcion: pregunta.respuestas.map(resp => resp.texto).join(" / "),
+    prc_seleccion: 1, // Asumiendo una lógica de selección por default
+    prc_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
+  }));
+
+  preguntasArchivoPreparadas.value = preguntasArchivo.map(pregunta => ({
+    prg_id: pregunta.id,
+    prh_pregunta: pregunta.prg_texto,
+    prh_direccion: "localhost", // Asumiendo una dirección estándar, necesitarás ajustar esto
+    prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
+  }));
+
+  preguntasPredeterminadasPreparadas.value = preguntasPredeterminadas.map(pregunta => ({
+    prg_id: pregunta.id,
+    prg_texto: pregunta.prg_texto,
+    prg_pregunta_predeterminada: 1 // Marcar todas como predeterminadas en el envío
+  }));
+
+  console.log('Datos finales para enviar al guardar:', {
+    preguntasAbiertas: preguntasAbiertasPreparadas.value,
+    preguntasCerradas: preguntasCerradasPreparadas.value,
+    preguntasArchivo: preguntasArchivoPreparadas.value,
+    preguntasPredeterminadas: preguntasPredeterminadasPreparadas.value
+  });
 };
 
-
-
-
+const filtersData = ref([]);
 
 
 
@@ -188,17 +218,17 @@ const handleSaveCurriculum = async (settings) => {
   console.log("Configuración recibida para guardar:", settings);
 
   if (!Array.isArray(settings)) {
-    console.error("Se esperaba un array para settings:", settings);
+    console.error("Se esperaba un array para settings, recibido:", settings);
     return;
   }
 
   const totalPercentage = settings.reduce((acc, curr) => acc + (curr.value || 0), 0);
+  console.log("Total de porcentaje de configuraciones:", totalPercentage);
   if (totalPercentage !== 100) {
     console.error("El total de porcentajes no suma 100:", totalPercentage);
     return;
   }
 
-  // Verifica que todas las secciones necesarias estén completas
   if (!personalInfoData.value || !salarioData.value || !educationData.value || !experienceData.value) {
     Swal.fire({
       title: 'Error',
@@ -206,33 +236,53 @@ const handleSaveCurriculum = async (settings) => {
       icon: 'error',
       confirmButtonText: 'Entendido'
     });
-    return;  // Salir de la función si alguna sección está vacía
+    return;
   }
 
-  // Prepara los datos de preguntas para la verificación de ID
   const preguntasConId = filtersData.value.filter(pregunta => pregunta.prg_id != null);
   const tieneIdsDePreguntas = preguntasConId.length > 0;
+  console.log("Preguntas con ID:", tieneIdsDePreguntas);
+
+  // console.log("Estado inicial de filtersData:", filtersData.value);
+
+  // // const preguntasAbiertas = filtersData.value.filter(p => p.tipo === 'Abierta');
+  // // const preguntasCerradas = filtersData.value.filter(p => p.tipo === 'Cerrada');
+  // // const preguntasArchivo = filtersData.value.filter(p => p.tipo === 'Archivo');
+
+  // // console.log("Preguntas abiertas filtradas:", preguntasAbiertas);
+  // // console.log("Preguntas cerradas filtradas:", preguntasCerradas);
+  // // console.log("Preguntas de archivo filtradas:", preguntasArchivo);
+
+
+  // // console.log("Datos finales para enviar al guardar:", {
+  // //   preguntasAbiertas: preguntasAbiertas,
+  // //   preguntasCerradas: preguntasCerradas,
+  // //   preguntasArchivo: preguntasArchivo
+  // // });
+
+
+
+
+  const data = {
+    personalInfo: personalInfoData.value,
+    salario: salarioData.value,
+    educacion: educationData.value,
+    experiencia: experienceData.value,
+    preguntasAbiertas: preguntasAbiertasPreparadas.value,
+    preguntasCerradas: preguntasCerradasPreparadas.value,
+    preguntasArchivo: preguntasArchivoPreparadas.value,
+    config: settings,
+  };
+
+  console.log("Datos consolidados para guardar o actualizar:", data);
 
   try {
-    const data = {
-      personalInfo: personalInfoData.value,
-      salario: salarioData.value,
-      educacion: educationData.value,
-      experiencia: experienceData.value,
-      preguntasAbiertas: filtersData.value.filter(p => p.tipo === 'abierta'),
-      preguntasCerradas: filtersData.value.filter(p => p.tipo === 'cerrada'),
-      preguntasArchivo: filtersData.value.filter(p => p.tipo === 'archivo'),
-      config: settings,
-    };
-
-    console.log("Datos consolidados para guardar o actualizar:", data);
-
-    // Evaluar si se actualiza o se guarda según los IDs
     if (data.personalInfo?.inf_id || data.salario?.sal_id || data.educacion?.edu_id || data.experiencia?.exp_id || tieneIdsDePreguntas) {
       console.log("Actualizando currículum...");
       await actualizarCurriculumCompletocAsync(data);
     } else {
-      console.log("Guardando currículum...");
+      console.log("Guardando currículum...", data);
+
       await guardarCurriculumCompletoAsync(data);
     }
 
@@ -252,6 +302,8 @@ const handleSaveCurriculum = async (settings) => {
 };
 
 
+
+
 const guardarCurriculumCompletoAsync = async (data) => {
   await guardarCurriculumCompleto.mutateAsync(data);
 };
@@ -259,6 +311,11 @@ const guardarCurriculumCompletoAsync = async (data) => {
 const actualizarCurriculumCompletocAsync = async (data) => {
   await actualizarCurriculumCompleto.mutateAsync(data);
 };
+
+watch(filtersData, (newVal) => {
+  console.log("Nuevo valor de filtersData:", newVal);
+  handleFiltersSave(newVal);
+}, { deep: true });
 
 
 </script>

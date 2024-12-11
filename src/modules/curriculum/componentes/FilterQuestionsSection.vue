@@ -172,6 +172,33 @@ const cargarPreguntasExistentes = async () => {
   }
 };
 
+const cargarPreguntasPorPerfilExistentes = async () => {
+  try {
+    // Supongamos que esta URL trae todas las preguntas con sus detalles
+    const response = await useApi.get(`/api/v1/curriculum/preguntas-perfil/${props.id}`);
+    const preguntasData = Array.isArray(response) ? response : response.data || [];
+
+    if (!Array.isArray(preguntasData)) {
+      console.error("La respuesta no contiene un arreglo válido:", response);
+      return;
+    }
+
+    preguntas.value = preguntasData.map(pregunta => ({
+      id: pregunta.prg_id,
+      tipo: pregunta.prg_tipo_pregunta,
+      texto: pregunta.pregunta,
+      tipoSeleccionado: true,
+      respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
+      excluyente: pregunta.seleccion === 1, // Esto puede necesitar ajuste basado en cómo manejas las respuestas excluyentes
+      tipoNombre: pregunta.tipo_pregunta, // Esto asume que tienes una manera de mapear prg_tipo_pregunta a un string descriptivo
+      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
+    }));
+
+    console.log("Preguntas cargadas con detalles:", preguntas.value);
+  } catch (error) {
+    console.error("Error al cargar preguntas existentes:", error);
+  }
+};
 
 
 
@@ -191,49 +218,22 @@ const cargarPreguntasPredeterminadas = async () => {
 
 const seleccionarPreguntaPredeterminada = (pregunta) => {
   if (currentIndex.value !== null && preguntas.value[currentIndex.value]) {
-    const preguntaActual = preguntas.value[currentIndex.value];
+    let preguntaActual = {...preguntas.value[currentIndex.value]};
     preguntaActual.texto = pregunta.pregunta;
     preguntaActual.id = pregunta.prg_id;
     preguntaActual.tipo = pregunta.prg_tipo_pregunta;
-    preguntaActual.pcom_id = props.id;
-    preguntaActual.prg_pregunta_predeterminada = 1;
     preguntaActual.tipoNombre = "Predeterminada";
+
+    // Actualizar el objeto de pregunta en el array de manera reactiva
+    preguntas.value[currentIndex.value] = preguntaActual;
+
     mostrarModal.value = false;
-
-    // Enviar al backend la nueva pregunta predeterminada
-    const dataInicial = {
-      pcom_id: props.id,
-      prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
-      prg_pregunta_predeterminada: 1, // Marcamos como predeterminada
-    };
-
-    crearPreguntaFiltro
-      .mutateAsync(dataInicial)
-      .then((response) => {
-        if (response.data && response.data.id) {
-          preguntaActual.id = response.data.id; // Asigna el ID desde el backend
-          console.log("Pregunta predeterminada creada correctamente:", response.data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error al crear la pregunta predeterminada:", error);
-      });
-  } else {
-    preguntas.value.push({
-      id: pregunta.prg_id,
-      tipo: pregunta.prg_tipo_pregunta,
-      texto: pregunta.pregunta,
-      tipoSeleccionado: true,
-      respuestas: [],
-      excluyente: false,
-      tipoNombre: "Predeterminada",
-      prg_pregunta_predeterminada: 1,
-      pcom_id: props.id,
-    });
-
-    console.log("Pregunta predeterminada agregada y actualizada:", preguntas.value);
+    console.log("Pregunta predeterminada seleccionada y actualizada:", preguntaActual);
   }
 };
+
+
+
 
 
 
@@ -362,11 +362,10 @@ const eliminarRespuesta = (pIndex, rIndex) => {
 watch(
   preguntas,
   (newVal) => {
-    // Separar las preguntas por tipo para procesarlas correctamente
     const preguntasAbiertas = [];
     const preguntasCerradas = [];
     const preguntasArchivo = [];
-    
+    const preguntasPredeterminadas = [];
 
     for (const pregunta of newVal) {
       const basePregunta = {
@@ -377,32 +376,41 @@ watch(
         prg_texto: pregunta.texto,
       };
 
-      if (pregunta.tipoNombre === "Abierta") {
-        preguntasAbiertas.push(basePregunta);
-      } else if (pregunta.tipoNombre === "Cerrada") {
-        preguntasCerradas.push({
-          ...basePregunta,
-          respuestas: pregunta.respuestas || [], // Asegúrate de capturar las respuestas
-          excluyente: pregunta.excluyente || false, // Captura si es excluyente
-        });
-      } else if (pregunta.tipoNombre === "Archivo") {
-        preguntasArchivo.push(basePregunta);
+      switch (pregunta.tipoNombre) {
+        case "Abierta":
+          preguntasAbiertas.push(basePregunta);
+          break;
+        case "Cerrada":
+          preguntasCerradas.push({
+            ...basePregunta,
+            respuestas: pregunta.respuestas.map(r => ({ texto: r.texto })),
+            excluyente: pregunta.excluyente || false,
+          });
+          break;
+        case "Archivo":
+          preguntasArchivo.push(basePregunta);
+          break;
+        case "Predeterminada":
+          preguntasPredeterminadas.push(basePregunta);
+          break;
       }
     }
 
     console.log("Preguntas abiertas:", preguntasAbiertas);
     console.log("Preguntas cerradas:", preguntasCerradas);
     console.log("Preguntas archivo:", preguntasArchivo);
+    console.log("Preguntas predeterminadas:", preguntasPredeterminadas);
 
-    // Emitimos los cambios procesados
     emit("saveFilters", {
       preguntasAbiertas,
       preguntasCerradas,
       preguntasArchivo,
+      preguntasPredeterminadas
     });
   },
-  { deep: true } // Observa cambios profundos
+  { deep: true }
 );
+
 
 
 
@@ -410,5 +418,6 @@ watch(
 onMounted(() => {
   fetchPreguntasFiltro();
   cargarPreguntasExistentes();
+  cargarPreguntasPorPerfilExistentes();
 });
 </script>

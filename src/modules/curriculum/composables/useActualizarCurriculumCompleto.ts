@@ -54,6 +54,7 @@ export const useActualizarCurriculumCompleto = () => {
   };
 
   const actualizarExperiencia = async (data: ExperienciaRequest) => {
+    console.log("Entrando a actualizar experiencia", data);
     try {
       return await useApi.patch(`/api/v1/curriculum/experiencia/${data.exp_id}`, data);
     } catch (error) {

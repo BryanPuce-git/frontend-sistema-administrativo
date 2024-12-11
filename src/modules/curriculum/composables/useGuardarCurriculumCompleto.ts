@@ -35,24 +35,55 @@ export const useGuardarCurriculumCompleto = () => {
   };
 
   const guardarExperiencia = async (data: ExperienciaRequest) => {
+    console.log('Entrando a guardar experiencia', data);
     return await useApi.post('/api/v1/curriculum/experiencia', data);
   };
 
   const guardarPreguntasAbiertas = async (preguntas: PreguntaAbiertaRequest[]) => {
+    if (!Array.isArray(preguntas) || preguntas.length === 0) {
+      console.log('No hay preguntas abiertas para guardar.');
+      return;
+    }
+    console.log('Entrando a guardar preguntas abiertas con datos:', preguntas);
     for (const pregunta of preguntas) {
-      await useApi.post('/api/v1/curriculum/preguntas/abiertas', pregunta);
+      try {
+        const respuesta = await useApi.post('/api/v1/curriculum/preguntas/abiertas', pregunta);
+        console.log('Respuesta de guardar pregunta abierta:', respuesta);
+      } catch (error) {
+        console.error('Error al guardar pregunta abierta:', error);
+      }
     }
   };
 
   const guardarPreguntasCerradas = async (preguntas: PreguntaCerradaRequest[]) => {
+    if (!Array.isArray(preguntas) || preguntas.length === 0) {
+      console.log('No hay preguntas cerradas para guardar.');
+      return;
+    }
+    console.log('Entrando a guardar preguntas cerradas con datos:', preguntas);
     for (const pregunta of preguntas) {
-      await useApi.post('/api/v1/curriculum/preguntas/cerradas', pregunta);
+      try {
+        const respuesta = await useApi.post('/api/v1/curriculum/preguntas/cerradas', pregunta);
+        console.log('Respuesta de guardar pregunta cerrada:', respuesta);
+      } catch (error) {
+        console.error('Error al guardar pregunta cerrada:', error);
+      }
     }
   };
 
   const guardarPreguntasArchivo = async (preguntas: PreguntaArchivoRequest[]) => {
+    if (!Array.isArray(preguntas) || preguntas.length === 0) {
+      console.log('No hay preguntas de archivo para guardar.');
+      return;
+    }
+    console.log('Entrando a guardar preguntas de archivo con datos:', preguntas);
     for (const pregunta of preguntas) {
-      await useApi.post('/api/v1/curriculum/preguntas/archivo', pregunta);
+      try {
+        const respuesta = await useApi.post('/api/v1/curriculum/preguntas/archivo', pregunta);
+        console.log('Respuesta de guardar pregunta de archivo:', respuesta);
+      } catch (error) {
+        console.error('Error al guardar pregunta de archivo:', error);
+      }
     }
   };
 
@@ -67,7 +98,8 @@ export const useGuardarCurriculumCompleto = () => {
       await guardarPreguntasArchivo(data.preguntasArchivo);
     },
     onError: (error: AxiosError<ServerError>) => {
-      const serverMessage = error.response?.data.message || 'Ocurrió un error al guardar el currículum';
+      const serverMessage =
+        error.response?.data.message || 'Ocurrió un error al guardar el currículum';
       Swal.fire({
         title: 'Error',
         text: serverMessage,
