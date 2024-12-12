@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between bg-gray-200 p-4 rounded-t-lg">
       <h2 class="text-lg font-bold text-gray-800"><i class="fas fa-comments"></i> Preguntas Filtro</h2>
       <span class="transition-transform">
-        <!-- Toggle Switch -->
+
         <label class="inline-flex items-center cursor-pointer">
           <input type="checkbox" v-model="preguntasFiltroActive" class="sr-only" />
           <div class="relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out"
@@ -22,7 +22,7 @@
     <div v-if="preguntasFiltroActive" class="p-4 border border-t-0 rounded-b-lg bg-white shadow-sm">
       <p class="text-sm text-gray-600 mb-4">Agrega preguntas clave para filtrar a tus candidatos.</p>
 
-      <!-- Lista de preguntas añadidas -->
+
       <div v-if="preguntas.length > 0">
         <div v-for="(pregunta, index) in preguntas" :key="pregunta.id || index"
           class="mb-6 border rounded-lg shadow-sm">
@@ -45,7 +45,7 @@
             </button>
           </div>
 
-          <!-- Mostrar campos específicos según el tipo de pregunta -->
+
           <div v-if="pregunta.tipoSeleccionado" class="bg-gray-50 p-4 rounded-b-lg shadow-inner">
             <div
               v-if="pregunta.tipoNombre === 'Abierta' || pregunta.tipoNombre === 'Predeterminada' || pregunta.tipoNombre === 'Archivo'">
@@ -57,12 +57,12 @@
             </div>
 
             <div v-if="pregunta.tipoNombre === 'Cerrada'" class="space-y-2">
-              <!-- Input para ingresar el texto de la pregunta cerrada -->
+
               <input v-model="pregunta.texto" type="text"
                 class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Escribe la pregunta cerrada" />
 
-              <!-- Lista de opciones con radio buttons -->
+
               <div class="mt-2">
                 <div v-for="(respuesta, rIndex) in pregunta.respuestas" :key="rIndex"
                   class="flex items-center space-x-3 mb-2">
@@ -84,7 +84,7 @@
                 </button>
               </div>
 
-              <!-- Checkbox para marcar si la pregunta es excluyente -->
+
               <div class="flex items-center mt-2">
                 <input type="checkbox" v-model="pregunta.excluyente" class="mr-2">
                 <label class="text-sm text-gray-600">Pregunta excluyente</label>
@@ -96,8 +96,7 @@
       </div>
       <div v-else class="text-center text-gray-500">No hay preguntas disponibles.</div>
 
-      <!-- Botón para agregar una nueva pregunta -->
-      <!-- Contenedor externo con flex y justificación al centro -->
+
       <div class="flex justify-center">
         <button @click="agregarPregunta" type="button"
           class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-2 py-2 bg-blue-500  font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -152,62 +151,62 @@ const tiposPreguntas = ref([]);
 const obtenerPreguntasFiltro = useObtenerPreguntasFiltro();
 const crearPreguntaFiltro = useCrearPreguntaFiltro();
 const obtenerPreguntasPredeterminadas = useObtenerPreguntasPredeterminadas();
-const currentIndex = ref(null); // Índice de la pregunta actual que está siendo configurada
+const currentIndex = ref(null);
+const cargarCompletado = ref(false);
+// const cargarPreguntasExistentes = async () => {
+//   try {
+//     const response = await useApi.get(`/api/v1/curriculum/preguntas/${props.id}`);
+//     const preguntasData = Array.isArray(response) ? response : response.data || [];
 
-const cargarPreguntasExistentes = async () => {
-  try {
-    const response = await useApi.get(`/api/v1/curriculum/preguntas/${props.id}`);
-    const preguntasData = Array.isArray(response) ? response : response.data || [];
+//     if (!Array.isArray(preguntasData)) {
+//       console.error("La respuesta no contiene un arreglo válido:", response);
+//       return;
+//     }
 
-    if (!Array.isArray(preguntasData)) {
-      console.error("La respuesta no contiene un arreglo válido:", response);
-      return;
-    }
+//     preguntas.value = preguntasData.map((pregunta) => ({
+//       id: pregunta.prg_id,
+//       tipo: pregunta.prg_tipo_pregunta,
+//       texto: pregunta.prg_texto || "",
+//       tipoSeleccionado: true,
+//       respuestas: [],
+//       excluyente: pregunta.prg_pregunta_excluyente === 1,
+//       tipoNombre: pregunta.tipo_pregunta,
+//       prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
+//     }));
 
-    preguntas.value = preguntasData.map((pregunta) => ({
-      id: pregunta.prg_id,
-      tipo: pregunta.prg_tipo_pregunta,
-      texto: pregunta.prg_texto || "",
-      tipoSeleccionado: true,
-      respuestas: [],
-      excluyente: pregunta.prg_pregunta_excluyente === 1,
-      tipoNombre: pregunta.tipo_pregunta,
-      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0, // Asegura predeterminada
-    }));
+//     console.log("Preguntas cargadas:", preguntas.value);
+//   } catch (error) {
+//     console.error("Error al cargar preguntas existentes:", error);
+//   }
+// };
 
-    console.log("Preguntas cargadas:", preguntas.value);
-  } catch (error) {
-    console.error("Error al cargar preguntas existentes:", error);
-  }
-};
+// const cargarPreguntasPorPerfilExistentes = async () => {
+//   try {
 
-const cargarPreguntasPorPerfilExistentes = async () => {
-  try {
-    // Supongamos que esta URL trae todas las preguntas con sus detalles
-    const response = await useApi.get(`/api/v1/curriculum/preguntas-perfil/${props.id}`);
-    const preguntasData = Array.isArray(response) ? response : response.data || [];
+//     const response = await useApi.get(`/api/v1/curriculum/preguntas-perfil/${props.id}`);
+//     const preguntasData = Array.isArray(response) ? response : response.data || [];
 
-    if (!Array.isArray(preguntasData)) {
-      console.error("La respuesta no contiene un arreglo válido:", response);
-      return;
-    }
+//     if (!Array.isArray(preguntasData)) {
+//       console.error("La respuesta no contiene un arreglo válido:", response);
+//       return;
+//     }
 
-    preguntas.value = preguntasData.map(pregunta => ({
-      id: pregunta.prg_id,
-      tipo: pregunta.prg_tipo_pregunta,
-      texto: pregunta.pregunta,
-      tipoSeleccionado: true,
-      respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
-      excluyente: pregunta.seleccion === 0, 
-      tipoNombre: pregunta.tipo_pregunta, 
-      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
-    }));
+//     preguntas.value = preguntasData.map(pregunta => ({
+//       id: pregunta.prg_id,
+//       tipo: pregunta.prg_tipo_pregunta,
+//       texto: pregunta.pregunta,
+//       tipoSeleccionado: true,
+//       respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
+//       excluyente: pregunta.seleccion === 0,
+//       tipoNombre: pregunta.tipo_pregunta,
+//       prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
+//     }));
 
-    console.log("Preguntas cargadas con detalles:", preguntas.value);
-  } catch (error) {
-    console.error("Error al cargar preguntas existentes:", error);
-  }
-};
+//     console.log("Preguntas cargadas con detalles:", preguntas.value);
+//   } catch (error) {
+//     console.error("Error al cargar preguntas existentes:", error);
+//   }
+// };
 
 
 
@@ -233,7 +232,7 @@ const seleccionarPreguntaPredeterminada = (pregunta) => {
     preguntaActual.tipo = pregunta.prg_tipo_pregunta;
     preguntaActual.tipoNombre = "Predeterminada";
 
-    // Actualizar el objeto de pregunta en el array de manera reactiva
+
     preguntas.value[currentIndex.value] = preguntaActual;
 
     mostrarModal.value = false;
@@ -271,29 +270,28 @@ const seleccionarTipo = async (index) => {
     return;
   }
 
-  // Configuración básica de la pregunta
   pregunta.tipoSeleccionado = true;
   pregunta.tipoNombre = tipoSeleccionado.nombre;
-  pregunta.texto = ""; // Asegúrate de que siempre haya un campo de texto visible
+  pregunta.texto = "";
 
   if (pregunta.tipoNombre === "Predeterminada") {
-    // Manejo de preguntas predeterminadas
-    currentIndex.value = index;
-    await cargarPreguntasPredeterminadas(); // Abrimos el modal para seleccionar predeterminada
-    pregunta.prg_pregunta_predeterminada = 1; // Marca como predeterminada
 
-    // Si es predeterminada, aseguramos que vaya al backend
+    currentIndex.value = index;
+    await cargarPreguntasPredeterminadas();
+    pregunta.prg_pregunta_predeterminada = 1;
+
+
     const dataInicial = {
       pcom_id: props.id,
       prg_tipo_pregunta: tipoSeleccionado.id,
-      prg_pregunta_predeterminada: 1, // Marcamos como predeterminada
+      prg_pregunta_predeterminada: 1,
     };
 
     try {
       const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
 
       if (response.data && response.data.id) {
-        pregunta.id = response.data.id; // Actualizamos solo el ID de la pregunta recién creada
+        pregunta.id = response.data.id;
         console.log("Pregunta predeterminada creada correctamente:", response.data);
       } else {
         console.warn("El servidor no devolvió un ID para la pregunta creada.");
@@ -302,18 +300,18 @@ const seleccionarTipo = async (index) => {
       console.error("Error al crear la pregunta predeterminada:", error);
     }
   } else {
-    // Manejo de preguntas no predeterminadas
+
     const dataInicial = {
       pcom_id: props.id,
       prg_tipo_pregunta: tipoSeleccionado.id,
-      prg_pregunta_predeterminada: 0, // No es predeterminada
+      prg_pregunta_predeterminada: 0,
     };
 
     try {
       const response = await crearPreguntaFiltro.mutateAsync(dataInicial);
 
       if (response.data && response.data.id) {
-        pregunta.id = response.data.id; // Actualizamos solo el ID de la pregunta recién creada
+        pregunta.id = response.data.id;
         console.log("Pregunta creada correctamente:", response.data);
       } else {
         console.warn(
@@ -328,8 +326,8 @@ const seleccionarTipo = async (index) => {
         );
 
         if (ultimaPregunta) {
-          pregunta.id = ultimaPregunta.prg_id; // Sincroniza el ID
-          pregunta.prg_pregunta_predeterminada = 0; // Sincronizamos como no predeterminada
+          pregunta.id = ultimaPregunta.prg_id;
+          pregunta.prg_pregunta_predeterminada = 0;
           console.log("ID sincronizado desde el backend:", ultimaPregunta);
         }
       }
@@ -338,24 +336,24 @@ const seleccionarTipo = async (index) => {
     }
   }
 
-  // Configuración de atributos adicionales según el tipo de pregunta
+
   if (pregunta.tipoNombre === "Cerrada") {
-    // Configuración de preguntas cerradas con opciones iniciales
+
     pregunta.respuestas = [{ texto: "Sí" }, { texto: "No" }];
-    pregunta.excluyente = false; // Inicialización adicional si aplica
+    pregunta.excluyente = false;
     console.log("Pregunta cerrada configurada con respuestas iniciales:", pregunta);
   } else if (pregunta.tipoNombre === "Abierta" || pregunta.tipoNombre === "Archivo") {
     console.log("Pregunta abierta o archivo configurada:", pregunta);
   }
 
-  // Verifica y muestra el estado actualizado de la pregunta
+
   console.log("Pregunta después de seleccionar tipo:", pregunta);
 };
 
 
 
 
-// Métodos para agregar y eliminar respuestas
+
 const agregarRespuesta = (index) => {
   preguntas.value[index].respuestas.push({ texto: "" });
   console.log("Respuesta agregada:", preguntas.value[index].respuestas);
@@ -420,26 +418,33 @@ watch(
   { deep: true }
 );
 
-const cargarDatos = async () => {
-  if (!preguntasCargadas.value) {
-    try {
-      // Cargar preguntas del perfil primero
-      await cargarPreguntasPorPerfilExistentes();
-      // Después cargar cualquier otra pregunta necesaria
-      await cargarPreguntasExistentes();
-      preguntasCargadas.value = true;
-    } catch (error) {
-      console.error("Error cargando datos:", error);
-    }
+const cargarPreguntas = async () => {
+  try {
+    const [perfil, existentes] = await Promise.all([
+      useApi.get(`/api/v1/curriculum/preguntas-perfil/${props.id}`),
+      useApi.get(`/api/v1/curriculum/preguntas/${props.id}`)
+    ]);
+
+    preguntas.value = [...perfil.data, ...existentes.data].map(pregunta => ({
+      id: pregunta.prg_id,
+      tipo: pregunta.prg_tipo_pregunta,
+      texto: pregunta.pregunta || pregunta.prg_texto || "",
+      tipoSeleccionado: true,
+      respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
+      excluyente: pregunta.seleccion === 1 || pregunta.prg_pregunta_excluyente === 1,
+      tipoNombre: pregunta.tipo_pregunta,
+      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
+    }));
+
+    cargarCompletado.value = true; // Indica que la carga ha finalizado
+  } catch (error) {
+    console.error('Error al cargar preguntas:', error);
   }
 };
 
-
-
-onMounted(() => {
-  fetchPreguntasFiltro();
-  cargarPreguntasExistentes();
-  cargarPreguntasPorPerfilExistentes();
-  cargarDatos();
+onMounted(async () => {
+  await fetchPreguntasFiltro();
+  await cargarPreguntas();
 });
+
 </script>
