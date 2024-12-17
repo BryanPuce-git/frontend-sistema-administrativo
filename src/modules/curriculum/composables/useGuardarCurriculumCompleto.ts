@@ -10,6 +10,9 @@ import type { ExperienciaRequest } from '../dto/Experiencia.dto';
 import type { PreguntaAbiertaRequest } from '../dto/PreguntaAbiertaRequest.dto';
 import type { PreguntaCerradaRequest } from '../dto/PreguntaCerradaRequest.dto';
 import type { PreguntaArchivoRequest } from '../dto/PreguntaArchivoRequest.dto';
+// import cloneDeep from 'lodash.clonedeep';
+
+
 
 interface CurriculumData {
   personalInfo: InformacionPersonalRequest;
@@ -55,52 +58,47 @@ export const useGuardarCurriculumCompleto = () => {
     }
   };
 
-  const guardarPreguntasCerradas = async (preguntasCerradas: PreguntaCerradaRequest[]) => {
+  const guardarPreguntasCerradas = async (preguntasCerradas: any[]) => {
     console.log('Inicio de la función, comprobación inicial:', preguntasCerradas);
   
     if (!Array.isArray(preguntasCerradas) || preguntasCerradas.length === 0) {
-      console.log('No hay preguntas cerradas para guardar...comprobación', preguntasCerradas);
+      console.log('No hay preguntas cerradas para guardar.');
       return;
     }
   
     for (const pregunta of preguntasCerradas) {
-      console.log(`Comprobando pregunta ID ${pregunta.prg_id} con opciones:`, pregunta.opciones,pregunta.prc_pregunta, pregunta.prc_pregunta_excluyente, pregunta.prg_id, pregunta);
+      // Extraer las propiedades correctamente
+      const prg_id = pregunta.prg_id || pregunta.id;  // ID principal
+      const prc_pregunta = pregunta.pregunta || "Sin texto de pregunta"; // Texto de la pregunta
+      const prc_opcion = pregunta.opcion?.trim() || "Sin opción";  // Opción individual
+      const prc_seleccion = pregunta.seleccion || 0;  // Selección (0 o 1)
+      const prc_pregunta_excluyente = pregunta.prc_pregunta_excluyente ?? 0;
   
-      if (!Array.isArray(pregunta.opciones) || pregunta.opciones.length === 0) {
-        console.error(
-          `La pregunta ID ${pregunta.prg_id} no tiene opciones...comprobación`,
-          pregunta.opciones,
+      const preguntaCerradaRequest = {
+        prg_id,
+        prc_pregunta,
+        prc_opcion,
+        prc_seleccion,
+        prc_pregunta_excluyente,
+      };
+  
+      console.log('Enviando datos al POST:', preguntaCerradaRequest);
+  
+      try {
+        const response = await useApi.post(
+          '/api/v1/curriculum/preguntas/cerradas',
+          preguntaCerradaRequest
         );
-        continue;
-      }
-  
-      for (const opcion of pregunta.opciones) {
-        const preguntaCerradaRequest = {
-          prg_id: pregunta.prg_id,
-          prc_pregunta: pregunta.prc_pregunta,
-          prc_opcion: opcion.texto.trim(),
-          prc_seleccion: opcion.seleccionada ? 1 : 0,
-          prc_pregunta_excluyente: pregunta.prc_pregunta_excluyente ?? 0,
-        };
-  
-        console.log('Comprobación ... enviando al post', preguntaCerradaRequest);
-  
-        try {
-          const response = await useApi.post(
-            '/api/v1/curriculum/preguntas/cerradas',
-            preguntaCerradaRequest,
-          );
-          console.log('Registro guardado con éxito:', response);
-        } catch (error) {
-          if (error instanceof Error) {
-            console.error('Error al guardar pregunta cerrada:', error.message);
-          } else {
-            console.error('Error desconocido al guardar pregunta cerrada:', error);
-          }
-        }
+        console.log('Registro guardado con éxito:', response.data);
+      } catch (error) {
+        console.error('Error al guardar pregunta cerrada:', error);
       }
     }
   };
+  
+  
+  
+  
   
 
   const guardarPreguntasArchivo = async (preguntas: PreguntaArchivoRequest[]) => {

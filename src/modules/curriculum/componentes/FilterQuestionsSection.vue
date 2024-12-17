@@ -425,22 +425,49 @@ const cargarPreguntas = async () => {
       useApi.get(`/api/v1/curriculum/preguntas/${props.id}`)
     ]);
 
-    preguntas.value = [...perfil.data, ...existentes.data].map(pregunta => ({
-      id: pregunta.prg_id,
-      tipo: pregunta.prg_tipo_pregunta,
-      texto: pregunta.pregunta || pregunta.prg_texto || "",
-      tipoSeleccionado: true,
-      respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
-      excluyente: pregunta.seleccion === 0 || pregunta.prg_pregunta_excluyente === 0,
-      tipoNombre: pregunta.tipo_pregunta,
-      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
-    }));
+    // Combinamos las preguntas de perfil y existentes
+    const todasLasPreguntas = [...perfil.data, ...existentes.data];
 
-    cargarCompletado.value = true; 
+    // Creamos un objeto para agrupar preguntas cerradas por su ID
+    const preguntasAgrupadas = {};
+
+    todasLasPreguntas.forEach(pregunta => {
+      const id = pregunta.prg_id;
+
+      // Si la pregunta no existe aún en el objeto, la creamos
+      if (!preguntasAgrupadas[id]) {
+        preguntasAgrupadas[id] = {
+          id: id,
+          tipo: pregunta.prg_tipo_pregunta,
+          texto: pregunta.pregunta || pregunta.prg_texto || "",
+          tipoSeleccionado: true,
+          respuestas: [], // Inicializamos un arreglo vacío para respuestas
+          excluyente: pregunta.prg_pregunta_excluyente === 1,
+          tipoNombre: pregunta.tipo_pregunta,
+          prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
+        };
+      }
+
+      // Si la pregunta tiene una opción, la agregamos al arreglo de respuestas
+      if (pregunta.opcion) {
+        preguntasAgrupadas[id].respuestas.push({
+          texto: pregunta.opcion,
+          seleccionada: pregunta.seleccion === 1 // Ajuste para opciones seleccionadas
+        });
+      }
+    });
+
+    
+    preguntas.value = Object.values(preguntasAgrupadas);
+
+    console.log("Preguntas cargadas y agrupadas:", preguntas.value);
+    cargarCompletado.value = true;
+
   } catch (error) {
     console.error('Error al cargar preguntas:', error);
   }
 };
+
 
 onMounted(async () => {
   await fetchPreguntasFiltro();
