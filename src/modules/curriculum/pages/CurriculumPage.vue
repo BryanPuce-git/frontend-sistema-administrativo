@@ -181,13 +181,25 @@ const handleFiltersSave = (data) => {
     pra_respuesta: "A partir de las 07:00 a.m., etc." // Aquí necesitarías definir cómo obtienes la respuesta, por ejemplo
   }));
 
-  preguntasCerradasPreparadas.value = preguntasCerradas.map(pregunta => ({
-    prg_id: pregunta.id,
-    prc_pregunta: pregunta.prg_texto,
-    prc_opcion: pregunta.respuestas.map(resp => resp.texto).join(" / "),
-    prc_seleccion: 1, // Asumiendo una lógica de selección por default
-    prc_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
-  }));
+  preguntasCerradasPreparadas.value = preguntasCerradas.flatMap(pregunta => {
+    console.log("Preparando pregunta cerrada:", pregunta);  // Añade esto para ver qué datos tienes
+    // Asegúrate de que 'respuestas' es siempre un array
+    const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
+    return respuestas.map(resp => ({
+      prg_id: pregunta.id,
+      pcom_id: pcom_id.value,  // Cambia esto de 'props.id' a 'pcom_id.value' si estás usando composition API
+      prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
+      tipo_pregunta: "Cerrada",
+      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
+      predeterminada: "No",
+      id: pregunta.id,
+      pregunta: pregunta.prg_texto,
+      opcion: resp.texto.trim(),
+      seleccion: resp.seleccionada ? 1 : 0
+    }));
+  });
+
+
 
   preguntasArchivoPreparadas.value = preguntasArchivo.map(pregunta => ({
     prg_id: pregunta.id,

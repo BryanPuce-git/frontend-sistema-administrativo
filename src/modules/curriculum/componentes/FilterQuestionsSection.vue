@@ -431,12 +431,12 @@ const cargarPreguntas = async () => {
       texto: pregunta.pregunta || pregunta.prg_texto || "",
       tipoSeleccionado: true,
       respuestas: pregunta.opcion ? pregunta.opcion.split(" / ").map(opcion => ({ texto: opcion })) : [],
-      excluyente: pregunta.seleccion === 1 || pregunta.prg_pregunta_excluyente === 1,
+      excluyente: pregunta.seleccion === 0 || pregunta.prg_pregunta_excluyente === 0,
       tipoNombre: pregunta.tipo_pregunta,
       prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
     }));
 
-    cargarCompletado.value = true; // Indica que la carga ha finalizado
+    cargarCompletado.value = true; 
   } catch (error) {
     console.error('Error al cargar preguntas:', error);
   }

@@ -55,21 +55,53 @@ export const useGuardarCurriculumCompleto = () => {
     }
   };
 
-  const guardarPreguntasCerradas = async (preguntas: PreguntaCerradaRequest[]) => {
-    if (!Array.isArray(preguntas) || preguntas.length === 0) {
-      console.log('No hay preguntas cerradas para guardar.');
+  const guardarPreguntasCerradas = async (preguntasCerradas: PreguntaCerradaRequest[]) => {
+    console.log('Inicio de la función, comprobación inicial:', preguntasCerradas);
+  
+    if (!Array.isArray(preguntasCerradas) || preguntasCerradas.length === 0) {
+      console.log('No hay preguntas cerradas para guardar...comprobación', preguntasCerradas);
       return;
     }
-    console.log('Entrando a guardar preguntas cerradas con datos:', preguntas);
-    for (const pregunta of preguntas) {
-      try {
-        const respuesta = await useApi.post('/api/v1/curriculum/preguntas/cerradas', pregunta);
-        console.log('Respuesta de guardar pregunta cerrada:', respuesta);
-      } catch (error) {
-        console.error('Error al guardar pregunta cerrada:', error);
+  
+    for (const pregunta of preguntasCerradas) {
+      console.log(`Comprobando pregunta ID ${pregunta.prg_id} con opciones:`, pregunta.opciones,pregunta.prc_pregunta, pregunta.prc_pregunta_excluyente, pregunta.prg_id, pregunta);
+  
+      if (!Array.isArray(pregunta.opciones) || pregunta.opciones.length === 0) {
+        console.error(
+          `La pregunta ID ${pregunta.prg_id} no tiene opciones...comprobación`,
+          pregunta.opciones,
+        );
+        continue;
+      }
+  
+      for (const opcion of pregunta.opciones) {
+        const preguntaCerradaRequest = {
+          prg_id: pregunta.prg_id,
+          prc_pregunta: pregunta.prc_pregunta,
+          prc_opcion: opcion.texto.trim(),
+          prc_seleccion: opcion.seleccionada ? 1 : 0,
+          prc_pregunta_excluyente: pregunta.prc_pregunta_excluyente ?? 0,
+        };
+  
+        console.log('Comprobación ... enviando al post', preguntaCerradaRequest);
+  
+        try {
+          const response = await useApi.post(
+            '/api/v1/curriculum/preguntas/cerradas',
+            preguntaCerradaRequest,
+          );
+          console.log('Registro guardado con éxito:', response);
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error('Error al guardar pregunta cerrada:', error.message);
+          } else {
+            console.error('Error desconocido al guardar pregunta cerrada:', error);
+          }
+        }
       }
     }
   };
+  
 
   const guardarPreguntasArchivo = async (preguntas: PreguntaArchivoRequest[]) => {
     if (!Array.isArray(preguntas) || preguntas.length === 0) {
