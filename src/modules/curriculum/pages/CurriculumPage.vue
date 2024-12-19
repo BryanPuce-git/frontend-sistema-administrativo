@@ -168,59 +168,101 @@ const handleSkillsSave = (data) => {
 
 
 const handleFiltersSave = (data) => {
-  if (!data || typeof data !== 'object') {
+  if (!data || typeof data !== "object") {
     console.error("Se esperaba un objeto con arrays de preguntas, recibido:", data);
     return;
   }
 
-  const { preguntasAbiertas, preguntasCerradas, preguntasArchivo, preguntasPredeterminadas } = data;
+  console.log("Prueba de verificación en save filter", data);
 
-  preguntasAbiertasPreparadas.value = preguntasAbiertas.map(pregunta => ({
-    prg_id: pregunta.id,
-    pra_pregunta: pregunta.prg_texto,
-    pra_respuesta: "A partir de las 07:00 a.m., etc." // Aquí necesitarías definir cómo obtienes la respuesta, por ejemplo
-  }));
+  const {
+    preguntasAbiertas = [],
+    preguntasCerradas = [],
+    preguntasArchivo = [],
+    preguntasPredeterminadas = []
+  } = data; // Aún incluimos preguntasPredeterminadas para manejarlas adecuadamente
 
-  preguntasCerradasPreparadas.value = preguntasCerradas.flatMap(pregunta => {
-    console.log("Preparando pregunta cerrada:", pregunta);  // Añade esto para ver qué datos tienes
-    // Asegúrate de que 'respuestas' es siempre un array
-    const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
-    return respuestas.map(resp => ({
-      prg_id: pregunta.id,
-      pcom_id: pcom_id.value,  // Cambia esto de 'props.id' a 'pcom_id.value' si estás usando composition API
-      prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
-      tipo_pregunta: "Cerrada",
-      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
-      predeterminada: "No",
-      id: pregunta.id,
-      pregunta: pregunta.prg_texto,
-      opcion: resp.texto.trim(),
-      seleccion: resp.seleccionada ? 1 : 0
-    }));
-  });
+  preguntasAbiertasPreparadas.value = Array.isArray(preguntasAbiertas)
+    ? preguntasAbiertas.map((pregunta) => ({
+        prg_id: pregunta.id,
+        pra_pregunta: pregunta.prg_texto,
+        pra_respuesta: ""
+      }))
+    : [];
 
+  preguntasCerradasPreparadas.value = Array.isArray(preguntasCerradas)
+    ? preguntasCerradas.flatMap((pregunta) => {
+        console.log("Preparando pregunta cerrada:", pregunta);
+        const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
+        return respuestas.map((resp) => ({
+          prg_id: pregunta.id,
+          pcom_id: pcom_id.value,
+          prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
+          tipo_pregunta: "Cerrada",
+          prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
+          id: pregunta.id,
+          pregunta: pregunta.prg_texto,
+          opcion: resp.texto.trim(),
+          seleccion: resp.seleccionada ? 1 : 0
+        }));
+      })
+    : [];
 
+  preguntasArchivoPreparadas.value = Array.isArray(preguntasArchivo)
+    ? preguntasArchivo.map((pregunta) => ({
+        prg_id: pregunta.id,
+        prh_pregunta: pregunta.prg_texto,
+        prh_direccion: "localhost",
+        prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
+      }))
+    : [];
 
-  preguntasArchivoPreparadas.value = preguntasArchivo.map(pregunta => ({
-    prg_id: pregunta.id,
-    prh_pregunta: pregunta.prg_texto,
-    prh_direccion: "localhost", // Asumiendo una dirección estándar, necesitarás ajustar esto
-    prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
-  }));
+  // Aseguramos que las preguntas predeterminadas también sean clasificadas adecuadamente
+  if (Array.isArray(preguntasPredeterminadas)) {
+    preguntasPredeterminadas.forEach((pregunta) => {
+      if (pregunta.prg_tipo_pregunta === "Cerrada") {
+        // Si es cerrada, agregarla a preguntasCerradasPreparadas
+        const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
+        respuestas.forEach((resp) => {
+          preguntasCerradasPreparadas.value.push({
+            prg_id: pregunta.id,
+            pcom_id: pcom_id.value,
+            prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
+            tipo_pregunta: "Cerrada",
+            prg_pregunta_predeterminada: 1, // Es predeterminada
+            id: pregunta.id,
+            pregunta: pregunta.prg_texto,
+            opcion: resp.texto.trim(),
+            seleccion: resp.seleccionada ? 1 : 0
+          });
+        });
+      } else if (pregunta.prg_tipo_pregunta === "Abierta") {
+        // Si es abierta, agregarla a preguntasAbiertasPreparadas
+        preguntasAbiertasPreparadas.value.push({
+          prg_id: pregunta.id,
+          pra_pregunta: pregunta.prg_texto,
+          pra_respuesta: ""
+        });
+      } else if (pregunta.prg_tipo_pregunta === "Archivo") {
+        // Si es archivo, agregarla a preguntasArchivoPreparadas
+        preguntasArchivoPreparadas.value.push({
+          prg_id: pregunta.id,
+          prh_pregunta: pregunta.prg_texto,
+          prh_direccion: "localhost",
+          prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
+        });
+      }
+    });
+  }
 
-  preguntasPredeterminadasPreparadas.value = preguntasPredeterminadas.map(pregunta => ({
-    prg_id: pregunta.id,
-    prg_texto: pregunta.prg_texto,
-    prg_pregunta_predeterminada: 1 // Marcar todas como predeterminadas en el envío
-  }));
-
-  console.log('Datos finales para enviar al guardar:', {
+  console.log("Datos finales para enviar al guardar:", {
     preguntasAbiertas: preguntasAbiertasPreparadas.value,
     preguntasCerradas: preguntasCerradasPreparadas.value,
-    preguntasArchivo: preguntasArchivoPreparadas.value,
-    preguntasPredeterminadas: preguntasPredeterminadasPreparadas.value
+    preguntasArchivo: preguntasArchivoPreparadas.value
   });
 };
+
+
 
 const filtersData = ref([]);
 

@@ -227,18 +227,31 @@ const cargarPreguntasPredeterminadas = async () => {
 const seleccionarPreguntaPredeterminada = (pregunta) => {
   if (currentIndex.value !== null && preguntas.value[currentIndex.value]) {
     let preguntaActual = { ...preguntas.value[currentIndex.value] };
+
+    // Configurar los datos de la pregunta seleccionada
     preguntaActual.texto = pregunta.pregunta;
     preguntaActual.id = pregunta.prg_id;
-    preguntaActual.tipo = pregunta.prg_tipo_pregunta;
-    preguntaActual.tipoNombre = "Predeterminada";
+    preguntaActual.tipo = pregunta.prg_tipo_pregunta; // ID del tipo
+    preguntaActual.tipoNombre = pregunta.tipo_pregunta; // "Cerrada" o "Abierta"
+    preguntaActual.prg_pregunta_predeterminada = 1;
 
+    // Configurar respuestas iniciales si es cerrada
+    if (preguntaActual.tipoNombre === "Cerrada") {
+      preguntaActual.respuestas = pregunta.opciones?.split(" / ").map((opcion) => ({
+        texto: opcion.trim(),
+        seleccionada: false,
+      })) || [];
+    } else if (preguntaActual.tipoNombre === "Abierta") {
+      preguntaActual.respuestas = []; // Las abiertas no tienen respuestas
+    }
 
     preguntas.value[currentIndex.value] = preguntaActual;
-
     mostrarModal.value = false;
-    console.log("Pregunta predeterminada seleccionada y actualizada:", preguntaActual);
+
+    console.log("Pregunta predeterminada seleccionada:", preguntaActual);
   }
 };
+
 
 
 
@@ -275,11 +288,9 @@ const seleccionarTipo = async (index) => {
   pregunta.texto = "";
 
   if (pregunta.tipoNombre === "Predeterminada") {
-
     currentIndex.value = index;
     await cargarPreguntasPredeterminadas();
     pregunta.prg_pregunta_predeterminada = 1;
-
 
     const dataInicial = {
       pcom_id: props.id,
@@ -292,7 +303,21 @@ const seleccionarTipo = async (index) => {
 
       if (response.data && response.data.id) {
         pregunta.id = response.data.id;
-        console.log("Pregunta predeterminada creada correctamente:", response.data);
+
+        // Verificar si la pregunta predeterminada es abierta, cerrada o archivo
+        if (pregunta.tipo === "Abierta") {
+          pregunta.tipoNombre = "Abierta";
+          pregunta.respuestas = [];
+        } else if (pregunta.tipo === "Cerrada") {
+          pregunta.tipoNombre = "Cerrada";
+          pregunta.respuestas = [{ texto: "Sí" }, { texto: "No" }];
+          pregunta.excluyente = false;
+        } else if (pregunta.tipo === "Archivo") {
+          pregunta.tipoNombre = "Archivo";
+          pregunta.respuestas = []; // Archivo no necesita respuestas
+        }
+
+        console.log("Pregunta predeterminada creada y clasificada correctamente:", pregunta);
       } else {
         console.warn("El servidor no devolvió un ID para la pregunta creada.");
       }
@@ -300,7 +325,6 @@ const seleccionarTipo = async (index) => {
       console.error("Error al crear la pregunta predeterminada:", error);
     }
   } else {
-
     const dataInicial = {
       pcom_id: props.id,
       prg_tipo_pregunta: tipoSeleccionado.id,
@@ -336,9 +360,7 @@ const seleccionarTipo = async (index) => {
     }
   }
 
-
   if (pregunta.tipoNombre === "Cerrada") {
-
     pregunta.respuestas = [{ texto: "Sí" }, { texto: "No" }];
     pregunta.excluyente = false;
     console.log("Pregunta cerrada configurada con respuestas iniciales:", pregunta);
@@ -346,25 +368,29 @@ const seleccionarTipo = async (index) => {
     console.log("Pregunta abierta o archivo configurada:", pregunta);
   }
 
-
   console.log("Pregunta después de seleccionar tipo:", pregunta);
 };
 
-
-
-
-
 const agregarRespuesta = (index) => {
-  preguntas.value[index].respuestas.push({ texto: "" });
-  console.log("Respuesta agregada:", preguntas.value[index].respuestas);
+  if (preguntas.value[index]) {
+    preguntas.value[index].respuestas = preguntas.value[index].respuestas || [];
+    preguntas.value[index].respuestas.push({ texto: "" });
+    console.log("Respuesta agregada:", preguntas.value[index].respuestas);
+  } else {
+    console.error("No se encontró la pregunta para el índice proporcionado:", index);
+  }
 };
 
 const eliminarRespuesta = (pIndex, rIndex) => {
-  preguntas.value[pIndex].respuestas.splice(rIndex, 1);
-  console.log("Respuesta eliminada:", preguntas.value[pIndex].respuestas);
+  if (preguntas.value[pIndex] && preguntas.value[pIndex].respuestas) {
+    preguntas.value[pIndex].respuestas.splice(rIndex, 1);
+    console.log("Respuesta eliminada:", preguntas.value[pIndex].respuestas);
+  } else {
+    console.error(
+      `No se pudo eliminar la respuesta. Pregunta en índice ${pIndex} o respuesta en índice ${rIndex} no encontrada.`
+    );
+  }
 };
-
-
 
 watch(
   preguntas,
@@ -372,7 +398,6 @@ watch(
     const preguntasAbiertas = [];
     const preguntasCerradas = [];
     const preguntasArchivo = [];
-    const preguntasPredeterminadas = [];
 
     for (const pregunta of newVal) {
       const basePregunta = {
@@ -383,40 +408,54 @@ watch(
         prg_texto: pregunta.texto,
       };
 
-      switch (pregunta.tipoNombre) {
-        case "Abierta":
-          preguntasAbiertas.push(basePregunta);
-          break;
-        case "Cerrada":
-          preguntasCerradas.push({
-            ...basePregunta,
-            respuestas: pregunta.respuestas.map(r => ({ texto: r.texto })),
-            excluyente: pregunta.excluyente || false,
-          });
-          break;
-        case "Archivo":
-          preguntasArchivo.push(basePregunta);
-          break;
-        case "Predeterminada":
-          preguntasPredeterminadas.push(basePregunta);
-          break;
+      // Clasificar las preguntas según su tipo
+      if (
+        pregunta.tipoNombre === "Abierta" ||
+        (pregunta.tipoNombre === "Predeterminada" && pregunta.tipo === "Abierta")
+      ) {
+        preguntasAbiertas.push(basePregunta);
+      } else if (
+        pregunta.tipoNombre === "Cerrada" ||
+        (pregunta.tipoNombre === "Predeterminada" && pregunta.tipo === "Cerrada")
+      ) {
+        preguntasCerradas.push({
+          ...basePregunta,
+          respuestas: pregunta.respuestas.map((r) => ({ texto: r.texto })),
+          excluyente: pregunta.excluyente || false,
+        });
+      } else if (pregunta.tipoNombre === "Archivo") {
+        preguntasArchivo.push(basePregunta);
       }
     }
-
-    console.log("Preguntas abiertas:", preguntasAbiertas);
-    console.log("Preguntas cerradas:", preguntasCerradas);
-    console.log("Preguntas archivo:", preguntasArchivo);
-    console.log("Preguntas predeterminadas:", preguntasPredeterminadas);
 
     emit("saveFilters", {
       preguntasAbiertas,
       preguntasCerradas,
       preguntasArchivo,
-      preguntasPredeterminadas
     });
   },
   { deep: true }
 );
+
+
+
+
+
+
+// const agregarRespuesta = (index) => {
+//   preguntas.value[index].respuestas.push({ texto: "" });
+//   console.log("Respuesta agregada:", preguntas.value[index].respuestas);
+// };
+
+// const eliminarRespuesta = (pIndex, rIndex) => {
+//   preguntas.value[pIndex].respuestas.splice(rIndex, 1);
+//   console.log("Respuesta eliminada:", preguntas.value[pIndex].respuestas);
+// };
+
+
+
+
+
 
 const cargarPreguntas = async () => {
   try {
@@ -425,34 +464,33 @@ const cargarPreguntas = async () => {
       useApi.get(`/api/v1/curriculum/preguntas/${props.id}`)
     ]);
 
-    // Combinamos las preguntas de perfil y existentes
+    
     const todasLasPreguntas = [...perfil.data, ...existentes.data];
 
-    // Creamos un objeto para agrupar preguntas cerradas por su ID
+    
     const preguntasAgrupadas = {};
 
     todasLasPreguntas.forEach(pregunta => {
       const id = pregunta.prg_id;
 
-      // Si la pregunta no existe aún en el objeto, la creamos
+  
       if (!preguntasAgrupadas[id]) {
         preguntasAgrupadas[id] = {
           id: id,
           tipo: pregunta.prg_tipo_pregunta,
           texto: pregunta.pregunta || pregunta.prg_texto || "",
           tipoSeleccionado: true,
-          respuestas: [], // Inicializamos un arreglo vacío para respuestas
+          respuestas: [], 
           excluyente: pregunta.prg_pregunta_excluyente === 1,
           tipoNombre: pregunta.tipo_pregunta,
           prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
         };
       }
 
-      // Si la pregunta tiene una opción, la agregamos al arreglo de respuestas
       if (pregunta.opcion) {
         preguntasAgrupadas[id].respuestas.push({
           texto: pregunta.opcion,
-          seleccionada: pregunta.seleccion === 1 // Ajuste para opciones seleccionadas
+          seleccionada: pregunta.seleccion === 1 
         });
       }
     });
