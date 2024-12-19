@@ -58,44 +58,49 @@ export const useGuardarCurriculumCompleto = () => {
     }
   };
 
-  const guardarPreguntasCerradas = async (preguntasCerradas: any[]) => {
-    console.log('Inicio de la función, comprobación inicial:', preguntasCerradas);
-  
+  const guardarPreguntasCerradas = async (preguntasCerradas : PreguntaCerradaRequest[]) => {
+    console.log("Inicio de la función, comprobación inicial:", preguntasCerradas);
+
+    // Validar si el array de preguntas cerradas es válido
     if (!Array.isArray(preguntasCerradas) || preguntasCerradas.length === 0) {
-      console.log('No hay preguntas cerradas para guardar.');
-      return;
+        console.log("No hay preguntas cerradas para guardar.");
+        return;
     }
-  
+
     for (const pregunta of preguntasCerradas) {
-      // Extraer las propiedades correctamente
-      const prg_id = pregunta.prg_id || pregunta.id;  // ID principal
-      const prc_pregunta = pregunta.pregunta || "Sin texto de pregunta"; // Texto de la pregunta
-      const prc_opcion = pregunta.opcion?.trim() || "Sin opción";  // Opción individual
-      const prc_seleccion = pregunta.seleccion || 0;  // Selección (0 o 1)
-      const prc_pregunta_excluyente = pregunta.prc_pregunta_excluyente ?? 0;
-  
-      const preguntaCerradaRequest = {
-        prg_id,
-        prc_pregunta,
-        prc_opcion,
-        prc_seleccion,
-        prc_pregunta_excluyente,
-      };
-  
-      console.log('Enviando datos al POST:', preguntaCerradaRequest);
-  
-      try {
-        const response = await useApi.post(
-          '/api/v1/curriculum/preguntas/cerradas',
-          preguntaCerradaRequest
-        );
-        console.log('Registro guardado con éxito:', response.data);
-      } catch (error) {
-        console.error('Error al guardar pregunta cerrada:', error);
-      }
+        console.log("Verificando pregunta", pregunta);
+
+        try {
+            // Validar y asignar valores necesarios
+            const prg_id = pregunta.prg_id; // Asegurarse de que siempre hay un ID
+            const prc_pregunta = pregunta.prc_pregunta?.trim() || "Texto no especificado"; // Asegurar que se usa trim()
+            const prc_opcion = pregunta.prc_opcion?.trim() || "Opción no especificada"; // Asegurar que se usa trim()
+            const prc_seleccion = typeof pregunta.prc_seleccion === 'number' ? pregunta.prc_seleccion : 0; // Verificar si prc_seleccion es un número
+            const prc_pregunta_excluyente = typeof pregunta.prc_pregunta_excluyente === 'number' ? pregunta.prc_pregunta_excluyente : 0; // Verificar si prc_pregunta_excluyente es un número
+
+            // Construir el objeto de solicitud
+            const payload = {
+                prg_id,
+                prc_pregunta,
+                prc_opcion,
+                prc_seleccion,
+                prc_pregunta_excluyente,
+            };
+
+            console.log("Enviando datos al POST:", payload);
+
+            // Realizar la solicitud al endpoint
+            const response = await useApi.post("/api/v1/curriculum/preguntas/cerradas", payload);
+
+            console.log("Registro guardado con éxito:", response.data);
+        } catch (error) {
+            // Manejo de errores
+            console.error("Error al guardar pregunta cerrada:", error);
+        }
     }
-  };
-  
+};
+
+
   
   
   

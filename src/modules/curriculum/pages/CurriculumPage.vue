@@ -165,8 +165,6 @@ const handleSkillsSave = (data) => {
 };
 
 
-
-
 const handleFiltersSave = (data) => {
   if (!data || typeof data !== "object") {
     console.error("Se esperaba un objeto con arrays de preguntas, recibido:", data);
@@ -179,88 +177,74 @@ const handleFiltersSave = (data) => {
     preguntasAbiertas = [],
     preguntasCerradas = [],
     preguntasArchivo = [],
-    preguntasPredeterminadas = []
-  } = data; // Aún incluimos preguntasPredeterminadas para manejarlas adecuadamente
+  } = data;
 
-  preguntasAbiertasPreparadas.value = Array.isArray(preguntasAbiertas)
-    ? preguntasAbiertas.map((pregunta) => ({
+  console.log("verificación de const data");
+  console.log(preguntasAbiertas);
+  console.log(preguntasCerradas);
+  console.log(preguntasArchivo);
+
+  console.log("Procesando preguntas abiertas...");
+
+  preguntasAbiertasPreparadas.value = preguntasAbiertas.map((pregunta) => ({
+    prg_id: pregunta.id,
+    pra_pregunta: pregunta.prg_texto,
+    pra_respuesta: "",
+  }));
+  console.log("Preguntas abiertas procesadas:", preguntasAbiertasPreparadas.value);
+
+  console.log("Procesando preguntas cerradas...");
+  preguntasCerradasPreparadas.value = preguntasCerradas.flatMap((pregunta) => {
+    console.log("Procesando pregunta cerrada:", pregunta); // Verificar datos
+    const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
+    if (respuestas.length === 0) {
+      return {
         prg_id: pregunta.id,
-        pra_pregunta: pregunta.prg_texto,
-        pra_respuesta: ""
-      }))
-    : [];
+        pcom_id: pcom_id.value,
+        prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
+        tipo_pregunta: "Cerrada",
+        prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
+        predeterminada: pregunta.prg_pregunta_predeterminada ? "Sí" : "No",
+        id: pregunta.id,
+        pregunta: pregunta.prg_texto,
+        opcion: "", // Sin opciones
+        seleccion: 0,
+      };
+    }
+    return respuestas.map((resp) => ({
+      prg_id: pregunta.id,
+      pcom_id: pcom_id.value,
+      prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
+      tipo_pregunta: "Cerrada",
+      prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada,
+      predeterminada: pregunta.prg_pregunta_predeterminada ? "Sí" : "No",
+      id: pregunta.id,
+      pregunta: pregunta.prg_texto,
+      opcion: resp.texto.trim(),
+      seleccion: resp.seleccionada ? 1 : 0,
+    }));
+  });
 
-  preguntasCerradasPreparadas.value = Array.isArray(preguntasCerradas)
-    ? preguntasCerradas.flatMap((pregunta) => {
-        console.log("Preparando pregunta cerrada:", pregunta);
-        const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
-        return respuestas.map((resp) => ({
-          prg_id: pregunta.id,
-          pcom_id: pcom_id.value,
-          prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
-          tipo_pregunta: "Cerrada",
-          prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
-          id: pregunta.id,
-          pregunta: pregunta.prg_texto,
-          opcion: resp.texto.trim(),
-          seleccion: resp.seleccionada ? 1 : 0
-        }));
-      })
-    : [];
+  console.log("Preguntas cerradas procesadas:", preguntasCerradasPreparadas.value);
 
-  preguntasArchivoPreparadas.value = Array.isArray(preguntasArchivo)
-    ? preguntasArchivo.map((pregunta) => ({
-        prg_id: pregunta.id,
-        prh_pregunta: pregunta.prg_texto,
-        prh_direccion: "localhost",
-        prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
-      }))
-    : [];
-
-  // Aseguramos que las preguntas predeterminadas también sean clasificadas adecuadamente
-  if (Array.isArray(preguntasPredeterminadas)) {
-    preguntasPredeterminadas.forEach((pregunta) => {
-      if (pregunta.prg_tipo_pregunta === "Cerrada") {
-        // Si es cerrada, agregarla a preguntasCerradasPreparadas
-        const respuestas = Array.isArray(pregunta.respuestas) ? pregunta.respuestas : [];
-        respuestas.forEach((resp) => {
-          preguntasCerradasPreparadas.value.push({
-            prg_id: pregunta.id,
-            pcom_id: pcom_id.value,
-            prg_tipo_pregunta: pregunta.prg_tipo_pregunta,
-            tipo_pregunta: "Cerrada",
-            prg_pregunta_predeterminada: 1, // Es predeterminada
-            id: pregunta.id,
-            pregunta: pregunta.prg_texto,
-            opcion: resp.texto.trim(),
-            seleccion: resp.seleccionada ? 1 : 0
-          });
-        });
-      } else if (pregunta.prg_tipo_pregunta === "Abierta") {
-        // Si es abierta, agregarla a preguntasAbiertasPreparadas
-        preguntasAbiertasPreparadas.value.push({
-          prg_id: pregunta.id,
-          pra_pregunta: pregunta.prg_texto,
-          pra_respuesta: ""
-        });
-      } else if (pregunta.prg_tipo_pregunta === "Archivo") {
-        // Si es archivo, agregarla a preguntasArchivoPreparadas
-        preguntasArchivoPreparadas.value.push({
-          prg_id: pregunta.id,
-          prh_pregunta: pregunta.prg_texto,
-          prh_direccion: "localhost",
-          prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0
-        });
-      }
-    });
-  }
+  console.log("Procesando preguntas de archivo...");
+  preguntasArchivoPreparadas.value = preguntasArchivo.map((pregunta) => ({
+    prg_id: pregunta.id,
+    prh_pregunta: pregunta.prg_texto,
+    prh_direccion: "localhost",
+    prh_pregunta_excluyente: pregunta.prg_pregunta_excluyente ? 1 : 0,
+  }));
+  console.log("Preguntas de archivo procesadas:", preguntasArchivoPreparadas.value);
 
   console.log("Datos finales para enviar al guardar:", {
     preguntasAbiertas: preguntasAbiertasPreparadas.value,
     preguntasCerradas: preguntasCerradasPreparadas.value,
-    preguntasArchivo: preguntasArchivoPreparadas.value
+    preguntasArchivo: preguntasArchivoPreparadas.value,
   });
 };
+
+
+
 
 
 
@@ -271,11 +255,13 @@ const filtersData = ref([]);
 const handleSaveCurriculum = async (settings) => {
   console.log("Configuración recibida para guardar:", settings);
 
+  // Validar que settings es un array
   if (!Array.isArray(settings)) {
     console.error("Se esperaba un array para settings, recibido:", settings);
     return;
   }
 
+  // Verificar el total del porcentaje
   const totalPercentage = settings.reduce((acc, curr) => acc + (curr.value || 0), 0);
   console.log("Total de porcentaje de configuraciones:", totalPercentage);
   if (totalPercentage !== 100) {
@@ -283,40 +269,29 @@ const handleSaveCurriculum = async (settings) => {
     return;
   }
 
+  // Verificar si todas las secciones están completas
   if (!personalInfoData.value || !salarioData.value || !educationData.value || !experienceData.value) {
+    console.warn("Algunas secciones están incompletas:", {
+      personalInfo: personalInfoData.value,
+      salario: salarioData.value,
+      education: educationData.value,
+      experience: experienceData.value,
+    });
     Swal.fire({
-      title: 'Error',
-      text: 'Por favor, complete todas las secciones antes de guardar.',
-      icon: 'error',
-      confirmButtonText: 'Entendido'
+      title: "Error",
+      text: "Por favor, complete todas las secciones antes de guardar.",
+      icon: "error",
+      confirmButtonText: "Entendido",
     });
     return;
   }
 
-  const preguntasConId = filtersData.value.filter(pregunta => pregunta.prg_id != null);
+  // Filtrar preguntas con ID
+  const preguntasConId = filtersData.value.filter((pregunta) => pregunta.prg_id != null);
   const tieneIdsDePreguntas = preguntasConId.length > 0;
-  console.log("Preguntas con ID:", tieneIdsDePreguntas);
+  console.log("Preguntas con ID:", preguntasConId);
 
-  // console.log("Estado inicial de filtersData:", filtersData.value);
-
-  // // const preguntasAbiertas = filtersData.value.filter(p => p.tipo === 'Abierta');
-  // // const preguntasCerradas = filtersData.value.filter(p => p.tipo === 'Cerrada');
-  // // const preguntasArchivo = filtersData.value.filter(p => p.tipo === 'Archivo');
-
-  // // console.log("Preguntas abiertas filtradas:", preguntasAbiertas);
-  // // console.log("Preguntas cerradas filtradas:", preguntasCerradas);
-  // // console.log("Preguntas de archivo filtradas:", preguntasArchivo);
-
-
-  // // console.log("Datos finales para enviar al guardar:", {
-  // //   preguntasAbiertas: preguntasAbiertas,
-  // //   preguntasCerradas: preguntasCerradas,
-  // //   preguntasArchivo: preguntasArchivo
-  // // });
-
-
-
-
+  // Consolidar datos
   const data = {
     personalInfo: personalInfoData.value,
     salario: salarioData.value,
@@ -330,14 +305,22 @@ const handleSaveCurriculum = async (settings) => {
 
   console.log("Datos consolidados para guardar o actualizar:", data);
 
+  // Intentar guardar o actualizar el currículum
   try {
-    if (data.personalInfo?.inf_id || data.salario?.sal_id || data.educacion?.edu_id || data.experiencia?.exp_id || tieneIdsDePreguntas) {
+    if (
+      data.personalInfo?.inf_id ||
+      data.salario?.sal_id ||
+      data.educacion?.edu_id ||
+      data.experiencia?.exp_id ||
+      tieneIdsDePreguntas
+    ) {
       console.log("Actualizando currículum...");
-      await actualizarCurriculumCompletocAsync(data);
+      const updateResponse = await actualizarCurriculumCompletocAsync(data);
+      console.log("Respuesta de actualización:", updateResponse);
     } else {
-      console.log("Guardando currículum...", data);
-
-      await guardarCurriculumCompletoAsync(data);
+      console.log("Guardando currículum..." );
+      const saveResponse = await guardarCurriculumCompletoAsync(data);
+      console.log("Respuesta de guardado:", saveResponse);
     }
 
     console.log("Todos los datos han sido correctamente guardados o actualizados.");
@@ -347,13 +330,14 @@ const handleSaveCurriculum = async (settings) => {
   } catch (error) {
     console.error("Error al guardar o actualizar el currículum:", error);
     Swal.fire({
-      title: 'Error',
-      text: 'Ha ocurrido un error durante el proceso. Inténtelo de nuevo.',
-      icon: 'error',
-      confirmButtonText: 'Cerrar'
+      title: "Error",
+      text: "Ha ocurrido un error durante el proceso. Inténtelo de nuevo.",
+      icon: "error",
+      confirmButtonText: "Cerrar",
     });
   }
 };
+
 
 
 

@@ -427,7 +427,9 @@ watch(
         preguntasArchivo.push(basePregunta);
       }
     }
-
+    console.log("lo que se esta enviando", preguntasAbiertas,
+      preguntasCerradas,
+      preguntasArchivo,)
     emit("saveFilters", {
       preguntasAbiertas,
       preguntasCerradas,
@@ -464,23 +466,23 @@ const cargarPreguntas = async () => {
       useApi.get(`/api/v1/curriculum/preguntas/${props.id}`)
     ]);
 
-    
+
     const todasLasPreguntas = [...perfil.data, ...existentes.data];
 
-    
+
     const preguntasAgrupadas = {};
 
     todasLasPreguntas.forEach(pregunta => {
       const id = pregunta.prg_id;
 
-  
+
       if (!preguntasAgrupadas[id]) {
         preguntasAgrupadas[id] = {
           id: id,
           tipo: pregunta.prg_tipo_pregunta,
           texto: pregunta.pregunta || pregunta.prg_texto || "",
           tipoSeleccionado: true,
-          respuestas: [], 
+          respuestas: [],
           excluyente: pregunta.prg_pregunta_excluyente === 1,
           tipoNombre: pregunta.tipo_pregunta,
           prg_pregunta_predeterminada: pregunta.prg_pregunta_predeterminada || 0,
@@ -490,12 +492,12 @@ const cargarPreguntas = async () => {
       if (pregunta.opcion) {
         preguntasAgrupadas[id].respuestas.push({
           texto: pregunta.opcion,
-          seleccionada: pregunta.seleccion === 1 
+          seleccionada: pregunta.seleccion === 1
         });
       }
     });
 
-    
+
     preguntas.value = Object.values(preguntasAgrupadas);
 
     console.log("Preguntas cargadas y agrupadas:", preguntas.value);
