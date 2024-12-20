@@ -420,9 +420,9 @@ watch([edadDesde, edadHasta], ([nuevoDesde, nuevoHasta], [viejoDesde, viejoHasta
           icon: "error",
           confirmButtonText: "Entendido"
         });
-        // Restablece los valores a como estaban antes para corregir automáticamente
+       
         edadDesde.value = viejoDesde;
-        edadHasta.value = viejoHasta;
+        edadHasta.value = null;
       }
     }
     else if (desdeNum < 0 || hastaNum < 0) {
@@ -437,7 +437,7 @@ watch([edadDesde, edadHasta], ([nuevoDesde, nuevoHasta], [viejoDesde, viejoHasta
       if (hastaNum < 0) edadHasta.value = null;
     }
 
-  }, 1000); // Utiliza un retraso de 500 ms para las validaciones
+  }, 2000); // Utiliza un retraso de 500 ms para las validaciones
 }, { deep: true });
 
 const obtenerInformacionPersonal = async () => {
