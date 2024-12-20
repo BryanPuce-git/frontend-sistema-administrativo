@@ -224,20 +224,18 @@ const cargarPreguntasPredeterminadas = async () => {
   mostrarModal.value = true;
 };
 
-const seleccionarPreguntaPredeterminada = (pregunta) => {
+const seleccionarPreguntaPredeterminada = async (pregunta) => {
   if (currentIndex.value !== null && preguntas.value[currentIndex.value]) {
     let preguntaActual = { ...preguntas.value[currentIndex.value] };
 
-    // Configurar los datos de la pregunta seleccionada
     preguntaActual.texto = pregunta.pregunta;
-    preguntaActual.id = pregunta.prg_id;
     preguntaActual.tipo = pregunta.prg_tipo_pregunta; // ID del tipo
     preguntaActual.tipoNombre = pregunta.tipo_pregunta; // "Cerrada" o "Abierta"
     preguntaActual.prg_pregunta_predeterminada = 1;
 
     // Configurar respuestas iniciales si es cerrada
     if (preguntaActual.tipoNombre === "Cerrada") {
-      preguntaActual.respuestas = pregunta.opciones?.split(" / ").map((opcion) => ({
+      preguntaActual.respuestas = pregunta.opciones?.split(" / ").map(opcion => ({
         texto: opcion.trim(),
         seleccionada: false,
       })) || [];
@@ -245,12 +243,30 @@ const seleccionarPreguntaPredeterminada = (pregunta) => {
       preguntaActual.respuestas = []; // Las abiertas no tienen respuestas
     }
 
+    // Obtener el ID más reciente para las preguntas predeterminadas
+    try {
+      const response = await useApi.get(`/api/v1/curriculum/preguntas/${props.id}`);
+      const ultimaPreguntaPredeterminada = response.data.find(p => p.tipo_pregunta === "Predeterminada" && p.prg_pregunta_predeterminada === 1);
+
+      if (ultimaPreguntaPredeterminada) {
+        preguntaActual.id = ultimaPreguntaPredeterminada.prg_id;
+        console.log("ID actualizado con el último predeterminado encontrado:", ultimaPreguntaPredeterminada.prg_id);
+      } else {
+        console.warn("No se encontró una pregunta predeterminada reciente.");
+        preguntaActual.id = pregunta.prg_id; // Usar el ID de la pregunta seleccionada como respaldo
+      }
+    } catch (error) {
+      console.error("Error al obtener la última pregunta predeterminada:", error);
+      preguntaActual.id = pregunta.prg_id; // Usar el ID de la pregunta seleccionada como respaldo en caso de error
+    }
+
     preguntas.value[currentIndex.value] = preguntaActual;
     mostrarModal.value = false;
 
-    console.log("Pregunta predeterminada seleccionada:", preguntaActual);
+    console.log("Pregunta predeterminada seleccionada y actualizada:", preguntaActual);
   }
 };
+
 
 
 
